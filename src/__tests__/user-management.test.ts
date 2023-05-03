@@ -28,7 +28,7 @@ describe("User Management service", () => {
         //Act
         const getRoles = async () => { await userManagementApi.roles(); }
         //Assert
-        expect(getRoles()).rejects.toMatchObject({ response: { status: 401 } });
+        await expect(getRoles()).rejects.toMatchObject({ response: { status: 401 } });
       });
     });
 
@@ -73,7 +73,7 @@ describe("User Management service", () => {
         //Act
         const request = async () => { await userManagementApi.registerUser(<Register>{ password: 'Tester01*' }); }
         //Assert
-        expect(request()).rejects.toMatchObject({ response: { status: 400 } });
+        await expect(request()).rejects.toMatchObject({ response: { status: 400 } });
       });
 
       it("When password not provided, expect to return HTTP status 400", async () => {
@@ -82,7 +82,7 @@ describe("User Management service", () => {
         //Act
         const request = async () => { await userManagementApi.registerUser(<Register>{ email: faker.internet.email() }); }
         //Assert
-        expect(request()).rejects.toMatchObject({ response: { status: 400 } });
+        await expect(request()).rejects.toMatchObject({ response: { status: 400 } });
       });
       it("When no information provided, expect to return HTTP status 400", async () => {
         //Arrange
@@ -90,7 +90,7 @@ describe("User Management service", () => {
         //Act
         const request = async () => { await userManagementApi.registerUser(<Register>{}); }
         //Assert
-        expect(request()).rejects.toMatchObject({ response: { status: 400 } });
+        await expect(request()).rejects.toMatchObject({ response: { status: 400 } });
       });
       it("When invalid email provided, expect to return HTTP status 400", async () => {
         //Arrange
@@ -98,7 +98,7 @@ describe("User Management service", () => {
         //Act
         const request = async () => { await userManagementApi.registerUser(<Register>{ email: 'test_user', password: 'Tester01*' }); }
         //Assert
-        expect(request()).rejects.toMatchObject({ response: { status: 400 } });
+        await expect(request()).rejects.toMatchObject({ response: { status: 400 } });
       });
       it("When invalid password provided, expect to return HTTP status 400", async () => {
         //Arrange
@@ -106,7 +106,7 @@ describe("User Management service", () => {
         //Act
         const request = async () => { await userManagementApi.registerUser(<Register>{ email: faker.internet.email(), password: 'Tester' }); }
         //Assert
-        expect(request()).rejects.toMatchObject({ response: { status: 400 } });
+        await expect(request()).rejects.toMatchObject({ response: { status: 400 } });
       });
     });
 
@@ -144,7 +144,7 @@ describe("User Management service", () => {
         };
 
         //Assert
-        expect(assignPermission()).rejects.toMatchObject({ response: { status: 401 } });;
+        await expect(assignPermission()).rejects.toMatchObject({ response: { status: 401 } });;
       });
 
       it("When invalid username provided, Expect to return HTTP status 404", async () => {
@@ -161,7 +161,7 @@ describe("User Management service", () => {
         };
 
         //Assert
-        expect(assignPermission()).rejects.toMatchObject({ response: { status: 404 } });;
+        await expect(assignPermission()).rejects.toMatchObject({ response: { status: 404 } });;
       });
 
       it("When managing own account permission, Expect to return HTTP status 400", async () => {
@@ -178,7 +178,7 @@ describe("User Management service", () => {
         };
 
         //Assert
-        expect(assignPermission()).rejects.toMatchObject({ response: { status: 404 } });;
+        await expect(assignPermission()).rejects.toMatchObject({ response: { status: 400 } });;
       });
     });
 
