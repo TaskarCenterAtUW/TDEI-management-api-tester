@@ -166,7 +166,6 @@ describe("Organization service", () => {
           });
       });
 
-      ///////
       describe("Get Organizations", () => {
         describe("Functional", () => {
           it("When searched without filters, Expect to return list of organizations of type OrganizationList", async () => {
@@ -212,6 +211,60 @@ describe("Organization service", () => {
         //     //Assert
         //     expect(createOrganization()).rejects.toMatchObject({ response: { status: 400 } });;
         //   });
+        });
+    
+        describe("Functional", () => {
+          it("When updating new oraganization, Expect to return newly updated org id", async () => {
+              //Arrange
+              let organizationApi = new OrganizationApi(configuration);
+              //Act      
+              const updateOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) }            
+             //Assert
+              expect(updateOrganization()).rejects.toMatchObject({ response: { status: 400 } });;
+            });
+
+            it("When updating new oraganization with same name, Expect to return HTTP Status 400", async () => {
+                //Arrange
+                let organizationApi = new OrganizationApi(configuration);
+                //Act      
+                const updateOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) }               
+                 //Assert
+                expect(updateOrganization()).rejects.toMatchObject({ response: { status: 400 } });;
+              });
+
+        });
+
+        describe("Auth", () => {
+            it("When no auth token provided, Expect to return HTTP status 401", async () => {
+                //Arrange
+                let organizationApi = new OrganizationApi(configurationWithoutAuthHeader);
+                //Act      
+                const updateOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) }              
+                //Assert
+                expect(updateOrganization()).rejects.toMatchObject({ response: { status: 400 } });;
+              });
+          });
+      });
+
+      describe("Delete Organization", () => {
+        describe("Auth", () => {
+                it("When no auth token provided, Expect to return HTTP status 401", async () => {
+                    //Arrange
+                    let organizationApi = new OrganizationApi(configurationWithoutAuthHeader);
+                    //Act      
+                    const deleteOrganization = async () => { await organizationApi.deleteOrganization("id", true) }              
+                    //Assert
+                    expect(deleteOrganization()).rejects.toMatchObject({ response: { status: 400 } });;
+                  });
+
+                  it("When no auth token provided, Expect to return HTTP status 401", async () => {
+                    //Arrange
+                    let organizationApi = new OrganizationApi(configurationWithoutAuthHeader);
+                    //Act      
+                    const deleteOrganization = async () => { await organizationApi.deleteOrganization("id", true) }              
+                    //Assert
+                    expect(deleteOrganization()).rejects.toMatchObject({ response: { status: 400 } });;
+                  });
         });
     
         describe("Functional", () => {

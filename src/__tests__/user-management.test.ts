@@ -136,7 +136,7 @@ describe("User Management service", () => {
           let userManagementApi = new UserManagementApi(configurationWithAuthHeader);
           //Act
           const request = async () => {
-            await userManagementApi.permission(<RoleDetails>{ user_name: "email"})
+            await userManagementApi.permission(<RoleDetails>{ user_name: "username"})
           }
           //Assert
           expect(request()).rejects.toMatchObject({ response: { status: 404}})
