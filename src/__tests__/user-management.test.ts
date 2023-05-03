@@ -1,6 +1,7 @@
 import { Utility } from "../utils";
-import { AuthApi, Register, Roles, User, UserManagementApi } from "tdei-management-client";
+import { AuthApi, Register, RoleDetails, Roles, User, UserManagementApi } from "tdei-management-client";
 import { faker } from '@faker-js/faker';
+import { it } from "node:test";
 
 describe("User Management service", () => {
   let configuration = Utility.getConfiguration();
@@ -130,4 +131,153 @@ describe("User Management service", () => {
       });
     });
   });
+
+  describe("Assign Permission", () => {
+    describe("Validation", () => {
+        it("When invalid username provided, expect to return HTTP status 404", async () => {
+          //Arrange
+          let userManagementApi = new UserManagementApi(configuration);
+          //Act
+          const request = async () => {
+            await userManagementApi.permission(<RoleDetails>{ user_name: "email"})
+          }
+          //Assert
+          expect(request()).rejects.toMatchObject({ response: { status: 404}})
+        });
+
+        it("When managing own account permission, expect to return HTTP status 400", async () => {
+          //Arrange 
+          let userManagementApi = new UserManagementApi(configuration);
+          //Act
+          const request = async () => {
+            await userManagementApi.permission(<RoleDetails>{ 
+              user_name:configuration.username,
+              
+              roles: [""]})
+          }
+          //Assert
+          expect(request()).rejects.toMatchObject({ response: { status: 400} })
+        });
+
+    });
+
+    describe("Auth", () => {
+      it("When no auth token provided, expect to return HTTP status 401", async () => {
+        //Arrange 
+        let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
+        //Act
+        const request = async () => {
+          await userManagementApi.permission(<RoleDetails>{})
+        }
+        //Assert
+        expect(request()).rejects.toMatchObject({ response: { status: 401} })
+      });
+
+    });
+
+    describe("Functional", () => {
+      it("When assigning valid user permission, expect to return true", async () => {
+        //Arrange 
+        let userManagementApi = new UserManagementApi(configuration);
+        //Act
+        const request = async () => {
+          await userManagementApi.permission({
+            tdei_org_id:"",
+            user_name:"",
+            roles:[""]
+          })
+        }
+        //Assert
+        expect(request()).toBe(true);
+      });
+    });
+
+
+  });
+
+
+  describe("Revoke Permission", () => {
+    describe("Validation", () => {
+        it("When invalid username provided, expect to return HTTP status 404", async () => {
+          //Arrange
+          let userManagementApi = new UserManagementApi(configuration);
+          //Act
+          const request = async () => {
+            await userManagementApi.permission(<RoleDetails>{ user_name: "email"})
+          }
+          //Assert
+          expect(request()).rejects.toMatchObject({ response: { status: 404}})
+        });
+
+        it("When managing own account permission, expect to return HTTP status 400", async () => {
+          //Arrange 
+          let userManagementApi = new UserManagementApi(configuration);
+          //Act
+          const request = async () => {
+            await userManagementApi.permission(<RoleDetails>{ roles: [""]})
+          }
+          //Assert
+          expect(request()).rejects.toMatchObject({ response: { status: 400} })
+        });
+
+    });
+
+    describe("Auth", () => {
+      it("When no auth token provided, expect to return HTTP status 401", async () => {
+        //Arrange 
+        let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
+        //Act
+        const request = async () => {
+          await userManagementApi.permission(<RoleDetails>{})
+        }
+        //Assert
+        expect(request()).rejects.toMatchObject({ response: { status: 401} })
+      });
+    });
+
+    describe("Functional", () => {
+      it("When assigning valid user permission, expect to return true", async () => {
+        //Arrange 
+        let userManagementApi = new UserManagementApi(configuration);
+        //Act
+        const request = async () => {
+          await userManagementApi.permission(<RoleDetails>{})
+        }
+        //Assert
+        expect(request()).toBe(true);
+      });
+    });
+
+
+  });
+
+  describe("User Org Roles", () => {
+    describe("Auth", () => {
+      it("When no auth token provided, expect to return HTTP status 401", async () => {
+        //Arrange 
+        let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
+        //Act
+        const request = async () => {
+          await userManagementApi.roles()
+        }
+        //Assert
+        expect(request()).rejects.toMatchObject({ response: { status: 401} })
+      });
+    });
+
+    describe("Functional", () => {
+      it("When fetching valid user org roles, expect to return true", async () => {
+        //Arrange 
+        let userManagementApi = new UserManagementApi(configuration);
+        //Act
+        const request = async () => {
+          await userManagementApi.roles()
+        }
+        //Assert
+        expect(request()).toBe(true);
+      });
+    });
+  });
+
+
 });
