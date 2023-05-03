@@ -42,5 +42,7 @@ describe('my-awesome-test', () => {
 ```
 
 
-## TODO:
- Document on what the component is and where it helps
+## Test Case Documentation:
+Below document details the list of test cases to be implemented and against each test case update the status as the implementation is completed.
+
+[Test Case Documentation](https://github.com/TaskarCenterAtUW/TDEI-internaldocs/blob/master/adr/user-management-api-test-cases.md)
