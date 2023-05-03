@@ -1,18 +1,21 @@
-import { Utility } from "../utils";
-import { AuthApi, Register, Roles, User, UserManagementApi } from "tdei-management-client";
+import { TDEIROLES, Utility } from "../utils";
+import { AuthApi, Register, RoleDetails, Roles, User, UserManagementApi } from "tdei-management-client";
 import { faker } from '@faker-js/faker';
+import seed, { ISeedData } from "../data.seed";
+import { TdeiObjectFaker } from "../tdei-object-faker";
 
 describe("User Management service", () => {
-  let configuration = Utility.getConfiguration();
+  let configurationWithAuthHeader = Utility.getConfiguration();
   let configurationWithoutAuthHeader = Utility.getConfiguration();
-
+  let seederData: ISeedData | undefined = undefined;
   beforeAll(async () => {
-    let generalAPI = new AuthApi(configuration);
+    seederData = await seed.generate();
+    let generalAPI = new AuthApi(configurationWithAuthHeader);
     const loginResponse = await generalAPI.authenticate({
-      username: configuration.username,
-      password: configuration.password
+      username: configurationWithAuthHeader.username,
+      password: configurationWithAuthHeader.password
     });
-    configuration.baseOptions = {
+    configurationWithAuthHeader.baseOptions = {
       headers: { ...Utility.addAuthZHeader(loginResponse.data.access_token) }
     };
   });
@@ -25,14 +28,14 @@ describe("User Management service", () => {
         //Act
         const getRoles = async () => { await userManagementApi.roles(); }
         //Assert
-        expect(getRoles()).rejects.toMatchObject({ response: { status: 401 } });;
+        expect(getRoles()).rejects.toMatchObject({ response: { status: 401 } });
       });
     });
 
     describe("Functional", () => {
       it("When valid api token provided, expect to return HTTP status 200 with one or more tdei system roles", async () => {
         //Arrange
-        let userManagementApi = new UserManagementApi(configuration);
+        let userManagementApi = new UserManagementApi(configurationWithAuthHeader);
         //Act
         const rolesResponse = await userManagementApi.roles();
         //Assert
@@ -42,7 +45,7 @@ describe("User Management service", () => {
 
       it("When valid api token provided, expect return response to be of type Array of Role object", async () => {
         //Arrange
-        let userManagementApi = new UserManagementApi(configuration);
+        let userManagementApi = new UserManagementApi(configurationWithAuthHeader);
         //Act
         const rolesResponse = await userManagementApi.roles();
         //Assert
@@ -112,13 +115,7 @@ describe("User Management service", () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
         //Act
-        const response = await userManagementApi.registerUser(<Register>{
-          email: faker.internet.email(),
-          password: "Tester01*",
-          firstName: faker.name.firstName(),
-          lastName: faker.name.lastName(),
-          phone: faker.phone.number()
-        });
+        const response = await userManagementApi.registerUser(TdeiObjectFaker.getUser());
         //Assert
         expect(response.data.data).toMatchObject(<User>{
           email: expect.any(String),
@@ -127,6 +124,78 @@ describe("User Management service", () => {
           lastName: expect.any(String),
           phone: expect.any(String)
         });
+      });
+    });
+  });
+
+  describe("Assign Permission", () => {
+    describe("Validation", () => {
+      it("When no auth token provided, Expect to return HTTP status 401", async () => {
+        //Arrange
+        let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
+        //Act
+        const assignPermission = async () => {
+          await userManagementApi.permission(<RoleDetails>
+            {
+              roles: [TDEIROLES.FLEX_DATA_GENERATOR],
+              tdei_org_id: seederData?.organizationId,
+              user_name: seederData?.user.email
+            })
+        };
+
+        //Assert
+        expect(assignPermission()).rejects.toMatchObject({ response: { status: 401 } });;
+      });
+
+      it("When invalid username provided, Expect to return HTTP status 404", async () => {
+        //Arrange
+        let userManagementApi = new UserManagementApi(configurationWithAuthHeader);
+        //Act
+        const assignPermission = async () => {
+          await userManagementApi.permission(<RoleDetails>
+            {
+              roles: [TDEIROLES.FLEX_DATA_GENERATOR],
+              tdei_org_id: seederData?.organizationId,
+              user_name: faker.internet.email() //not registered email
+            })
+        };
+
+        //Assert
+        expect(assignPermission()).rejects.toMatchObject({ response: { status: 404 } });;
+      });
+
+      it("When managing own account permission, Expect to return HTTP status 400", async () => {
+        //Arrange
+        let userManagementApi = new UserManagementApi(configurationWithAuthHeader);
+        //Act
+        const assignPermission = async () => {
+          await userManagementApi.permission(<RoleDetails>
+            {
+              roles: [TDEIROLES.FLEX_DATA_GENERATOR],
+              tdei_org_id: seederData?.organizationId,
+              user_name: configurationWithAuthHeader.username //logged in user account
+            })
+        };
+
+        //Assert
+        expect(assignPermission()).rejects.toMatchObject({ response: { status: 404 } });;
+      });
+    });
+
+    describe("Functional", () => {
+      it("When assigning valid user permission, Expect to return true", async () => {
+        //Arrange
+        let userManagementApi = new UserManagementApi(configurationWithAuthHeader);
+        //Act
+        const response = await userManagementApi.permission(<RoleDetails>
+          {
+            roles: [TDEIROLES.FLEX_DATA_GENERATOR],
+            tdei_org_id: seederData?.organizationId,
+            user_name: seederData?.user.email
+          });
+
+        //Assert
+        expect(response.data.data).toBe("Successful!");
       });
     });
   });

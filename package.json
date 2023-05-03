@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "build": "rimraf ./build && tsc",
-    "start": "npm run build && node build/index.js",
+    "seed": "npx ts-node ./src/seed-json.ts",
     "e2e-tests": "jest --testRegex src/**/*.e2e.test.ts",
     "integration-tests": "jest --testRegex src/**/*.it.test.ts",
     "regression-tests": "jest --testRegex src/**/*.rt.test.ts"

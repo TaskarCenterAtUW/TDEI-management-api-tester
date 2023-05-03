@@ -13,8 +13,23 @@ export class Utility {
     });
   }
 
+  static parseJwt = (token) => {
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch (e) {
+      return null;
+    }
+  };
+
   static addAuthZHeader(accessToken) {
     return { Authorization: `Bearer ${accessToken}` };
   }
+}
 
+export enum TDEIROLES {
+  TDEI_ADMIN = "tdei_admin",
+  POC = "poc",
+  FLEX_DATA_GENERATOR = "flex_data_generator",
+  PATHWAYS_DATA_GENERATOR = "pathways_data_generator",
+  OSW_DATA_GENERATOR = "osw_data_generator"
 }
