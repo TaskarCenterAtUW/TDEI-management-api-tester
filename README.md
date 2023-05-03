@@ -15,6 +15,16 @@ The above code runs the tests and generates a `test-report.html` (already includ
 - name it in the format `<group>.test.ts`
 - Write test cases based on [jest](https://jestjs.io/docs/getting-started)
 
+## Seed data
+When running the test cases, seed data will be provisioned as part of seed.generate() call and it will also generate seed.data.json file.
+Generated file will be used as seeding information for subsequent test runs when running locally. If we need to generate seed data fresh there are multiple options specified below
+1. Delete the seed.data.json file, which will regenerate file again during test run.
+2. When making request to seed.generate() call , we can pass generate fresh seed param while calling seed.generate() call. ex. seed.generate(true)
+3. Run below cammand, which will generate new seed file
+```
+npm run seed
+```
+
 ## Important notes on writing tests for better readability
 - Consider Adding tests in the below format
 > Given

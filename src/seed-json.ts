@@ -7,7 +7,7 @@ class SeedJson {
     }
 
     async saveSeedFile() {
-        this.data = await seed.generate();
+        this.data = await seed.generate(true);
     }
 }
 
