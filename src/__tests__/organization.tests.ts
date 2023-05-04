@@ -2,27 +2,29 @@ import { Utility } from "../utils";
 import { AuthApi, Register, RoleDetails, Roles, User, UserManagementApi, OrganizationApi, Organization, OrganizationList } from "tdei-management-client";
 import { faker } from '@faker-js/faker';
 import { it } from "node:test";
+import seed, { ISeedData } from "../data.seed";
 
 describe("Organization service", () => {
-    let configuration = Utility.getConfiguration();
-    let configurationWithoutAuthHeader = Utility.getConfiguration();
-  
-    beforeAll(async () => {
-      let generalAPI = new AuthApi(configuration);
-      const loginResponse = await generalAPI.authenticate({
-        username: configuration.username,
-        password: configuration.password
-      });
-      configuration.baseOptions = {
-        headers: { ...Utility.addAuthZHeader(loginResponse.data.access_token) }
-      };
+  let configurationWithAuthHeader = Utility.getConfiguration();
+  let configurationWithoutAuthHeader = Utility.getConfiguration();
+  let seederData: ISeedData | undefined = undefined;
+  beforeAll(async () => {
+    seederData = await seed.generate();
+    let generalAPI = new AuthApi(configurationWithAuthHeader);
+    const loginResponse = await generalAPI.authenticate({
+      username: configurationWithAuthHeader.username,
+      password: configurationWithAuthHeader.password
     });
+    configurationWithAuthHeader.baseOptions = {
+      headers: { ...Utility.addAuthZHeader(loginResponse.data.access_token) }
+    };
+  });
   
     describe("Create Organization", () => {
       describe("Validation", () => {
         it("When creating new oraganization with empty name, expect to return HTTP status 400", async () => {
           //Arrange
-          let organizationApi = new OrganizationApi(configuration);
+          let organizationApi = new OrganizationApi(configurationWithAuthHeader);
           //Act      
           const createOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: "", phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) }         
            //Assert
@@ -31,7 +33,7 @@ describe("Organization service", () => {
 
         it("When creating new oraganization with empty phone, expect to return HTTP status 400", async () => {
             //Arrange
-            let organizationApi = new OrganizationApi(configuration);
+            let organizationApi = new OrganizationApi(configurationWithAuthHeader);
             //Act      
             const createOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: "", url: faker.internet.url(), address: faker.address.streetAddress()})) }           
              //Assert
@@ -40,7 +42,7 @@ describe("Organization service", () => {
 
           it("When creating new oraganization with empty address, expect to return HTTP status 400", async () => {
             //Arrange
-            let organizationApi = new OrganizationApi(configuration);
+            let organizationApi = new OrganizationApi(configurationWithAuthHeader);
             //Act      
             const createOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: ""})) }           
              //Assert
@@ -61,7 +63,7 @@ describe("Organization service", () => {
       describe("Functional", () => {
         it("When creating new oraganization, Expect to return newly created org id", async () => {
             //Arrange
-            let organizationApi = new OrganizationApi(configuration);
+            let organizationApi = new OrganizationApi(configurationWithAuthHeader);
             //Act    
         const createOrganizationResponse = await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) ;
         //Assert
@@ -73,7 +75,7 @@ describe("Organization service", () => {
           //TODO: 
           it("When creating new oraganization with same name, Expect to return HTTP Status 400", async () => {
             //Arrange
-            let organizationApi = new OrganizationApi(configuration);
+            let organizationApi = new OrganizationApi(configurationWithAuthHeader);
             //Act      
             const createOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) }            //Assert
             expect(createOrganization()).rejects.toMatchObject({ response: { status: 400 } });;
@@ -96,7 +98,7 @@ describe("Organization service", () => {
         describe("Validation", () => {
           it("When updating new oraganization with empty name, expect to return HTTP status 400", async () => {
             //Arrange
-            let organizationApi = new OrganizationApi(configuration);
+            let organizationApi = new OrganizationApi(configurationWithAuthHeader);
             //Act      
             const updateOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) }            
             //Assert
@@ -105,7 +107,7 @@ describe("Organization service", () => {
   
           it("When updating new oraganization with empty phone, expect to return HTTP status 400", async () => {
               //Arrange
-              let organizationApi = new OrganizationApi(configuration);
+              let organizationApi = new OrganizationApi(configurationWithAuthHeader);
               //Act      
               const updateOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) }            
              //Assert
@@ -114,7 +116,7 @@ describe("Organization service", () => {
   
             it("When updating new oraganization with empty address, expect to return HTTP status 400", async () => {
               //Arrange
-              let organizationApi = new OrganizationApi(configuration);
+              let organizationApi = new OrganizationApi(configurationWithAuthHeader);
               //Act      
               const updateOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) } 
               //Assert
@@ -135,7 +137,7 @@ describe("Organization service", () => {
         describe("Functional", () => {
           it("When updating new oraganization, Expect to return newly updated org id", async () => {
               //Arrange
-              let organizationApi = new OrganizationApi(configuration);
+              let organizationApi = new OrganizationApi(configurationWithAuthHeader);
               //Act      
               const updateOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) }            
             //Assert
@@ -145,7 +147,7 @@ describe("Organization service", () => {
 
             it("When updating new oraganization with same name, Expect to return HTTP Status 400", async () => {
                 //Arrange
-                let organizationApi = new OrganizationApi(configuration);
+                let organizationApi = new OrganizationApi(configurationWithAuthHeader);
                 //Act      
                 const updateOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) }             
                 //Assert
@@ -170,7 +172,7 @@ describe("Organization service", () => {
         describe("Functional", () => {
           it("When searched without filters, Expect to return list of organizations of type OrganizationList", async () => {
             //Arrange
-            let organizationApi = new OrganizationApi(configuration);
+            let organizationApi = new OrganizationApi(configurationWithAuthHeader);
             //Act
             const response = await organizationApi.getOrganization();
 
@@ -186,7 +188,7 @@ describe("Organization service", () => {
   
           it("When updating new oraganization with empty phone, expect to return HTTP status 400", async () => {
               //Arrange
-              let organizationApi = new OrganizationApi(configuration);
+              let organizationApi = new OrganizationApi(configurationWithAuthHeader);
               //Act      
               const updateOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) }             
                //Assert
@@ -195,7 +197,7 @@ describe("Organization service", () => {
   
             it("When updating new oraganization with empty address, expect to return HTTP status 400", async () => {
               //Arrange
-              let organizationApi = new OrganizationApi(configuration);
+              let organizationApi = new OrganizationApi(configurationWithAuthHeader);
               //Act      
               const updateOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) }             
                //Assert
@@ -216,7 +218,7 @@ describe("Organization service", () => {
         describe("Functional", () => {
           it("When updating new oraganization, Expect to return newly updated org id", async () => {
               //Arrange
-              let organizationApi = new OrganizationApi(configuration);
+              let organizationApi = new OrganizationApi(configurationWithAuthHeader);
               //Act      
               const updateOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) }            
              //Assert
@@ -225,7 +227,7 @@ describe("Organization service", () => {
 
             it("When updating new oraganization with same name, Expect to return HTTP Status 400", async () => {
                 //Arrange
-                let organizationApi = new OrganizationApi(configuration);
+                let organizationApi = new OrganizationApi(configurationWithAuthHeader);
                 //Act      
                 const updateOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) }               
                  //Assert
@@ -270,7 +272,7 @@ describe("Organization service", () => {
         describe("Functional", () => {
           it("When updating new oraganization, Expect to return newly updated org id", async () => {
               //Arrange
-              let organizationApi = new OrganizationApi(configuration);
+              let organizationApi = new OrganizationApi(configurationWithAuthHeader);
               //Act      
               const updateOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) }            
              //Assert
@@ -279,7 +281,7 @@ describe("Organization service", () => {
 
             it("When updating new oraganization with same name, Expect to return HTTP Status 400", async () => {
                 //Arrange
-                let organizationApi = new OrganizationApi(configuration);
+                let organizationApi = new OrganizationApi(configurationWithAuthHeader);
                 //Act      
                 const updateOrganization = async () => { await organizationApi.createOrganization(<Organization>({tdei_org_id: "", org_name: faker.company.name(), phone: faker.phone.number(), url: faker.internet.url(), address: faker.address.streetAddress()})) }               
                  //Assert
