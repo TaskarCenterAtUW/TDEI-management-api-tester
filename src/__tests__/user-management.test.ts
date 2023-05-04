@@ -1,5 +1,5 @@
 import { TDEIROLES, Utility } from "../utils";
-import { AuthApi, Register, RoleDetails, Roles, User, UserManagementApi } from "tdei-management-client";
+import { OrgRoles, Register, RoleDetails, Roles, User, UserManagementApi } from "tdei-management-client";
 import { faker } from '@faker-js/faker';
 import seed, { ISeedData } from "../data.seed";
 import { TdeiObjectFaker } from "../tdei-object-faker";
@@ -10,15 +10,11 @@ describe("User Management service", () => {
   let seederData: ISeedData | undefined = undefined;
   beforeAll(async () => {
     seederData = await seed.generate();
-    let generalAPI = new AuthApi(configurationWithAuthHeader);
-    const loginResponse = await generalAPI.authenticate({
-      username: configurationWithAuthHeader.username,
-      password: configurationWithAuthHeader.password
-    });
+    const loginResponse = await Utility.login(configurationWithAuthHeader.username!, configurationWithAuthHeader.password!);
     configurationWithAuthHeader.baseOptions = {
       headers: { ...Utility.addAuthZHeader(loginResponse.data.access_token) }
     };
-  });
+  }, 50000);
 
   describe("Get Roles", () => {
     describe("Auth", () => {
@@ -129,7 +125,8 @@ describe("User Management service", () => {
   });
 
   describe("Assign Permission", () => {
-    describe("Validation", () => {
+
+    describe("Auth", () => {
       it("When no auth token provided, Expect to return HTTP status 401", async () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
@@ -146,7 +143,8 @@ describe("User Management service", () => {
         //Assert
         await expect(assignPermission()).rejects.toMatchObject({ response: { status: 401 } });;
       });
-
+    });
+    describe("Validation", () => {
       it("When invalid username provided, Expect to return HTTP status 404", async () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithAuthHeader);
@@ -199,4 +197,123 @@ describe("User Management service", () => {
       });
     });
   });
+
+  describe("User org Roles", () => {
+
+    describe("Auth", () => {
+      it("When no auth token provided, Expect to return HTTP status 401", async () => {
+        //Arrange
+        let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
+        //Act
+        const orgRoles = async () => {
+          await userManagementApi.orgRoles(seederData?.user.email!);
+        };
+
+        //Assert
+        await expect(orgRoles()).rejects.toMatchObject({ response: { status: 401 } });;
+      });
+    });
+
+    describe("Functional", () => {
+      it("When fetching logged in user org roles, Expect to return user org roles of type OrgRoles", async () => {
+        //Arrange
+        let configuration = Utility.getConfiguration();
+        const loginResponse = await Utility.login(seederData?.user.email!, "Tester01*");
+        configuration.baseOptions = {
+          headers: { ...Utility.addAuthZHeader(loginResponse.data.access_token) }
+        };
+        let userManagementApi = new UserManagementApi(configuration);
+        //Act
+
+        const response = await userManagementApi.orgRoles(seederData?.user.id!);
+        //Assert
+        expect(Array.isArray(response.data)).toBe(true);
+        expect(response.data![0]).toMatchObject(<OrgRoles>{
+          tdei_org_id: expect.any(String),
+          org_name: expect.any(String),
+          roles: expect.any(Array<string>)
+        });
+
+      });
+    });
+  });
+
+  describe("Revoke Permission", () => {
+
+    describe("Auth", () => {
+      it("When no auth token provided, Expect to return HTTP status 401", async () => {
+        //Arrange
+        let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
+        //Act
+        const assignPermission = async () => {
+          await userManagementApi.revokePermission(<RoleDetails>
+            {
+              roles: [TDEIROLES.FLEX_DATA_GENERATOR],
+              tdei_org_id: seederData?.organizationId,
+              user_name: seederData?.user.email
+            })
+        };
+
+        //Assert
+        await expect(assignPermission()).rejects.toMatchObject({ response: { status: 401 } });;
+      });
+    });
+    describe("Validation", () => {
+      it("When invalid username provided, Expect to return HTTP status 404", async () => {
+        //Arrange
+        let userManagementApi = new UserManagementApi(configurationWithAuthHeader);
+        //Act
+        const assignPermission = async () => {
+          await userManagementApi.revokePermission(<RoleDetails>
+            {
+              roles: [TDEIROLES.FLEX_DATA_GENERATOR],
+              tdei_org_id: seederData?.organizationId,
+              user_name: faker.internet.email() //not registered email
+            })
+        };
+
+        //Assert
+        await expect(assignPermission()).rejects.toMatchObject({ response: { status: 404 } });;
+      });
+
+      it("When managing own account permission, Expect to return HTTP status 400", async () => {
+        //Arrange
+        let userManagementApi = new UserManagementApi(configurationWithAuthHeader);
+        //Act
+        const assignPermission = async () => {
+          await userManagementApi.revokePermission(<RoleDetails>
+            {
+              roles: [TDEIROLES.FLEX_DATA_GENERATOR],
+              tdei_org_id: seederData?.organizationId,
+              user_name: configurationWithAuthHeader.username //logged in user account
+            })
+        };
+
+        //Assert
+        await expect(assignPermission()).rejects.toMatchObject({ response: { status: 400 } });;
+      });
+    });
+
+    describe("Functional", () => {
+      it("When assigning valid user permission, Expect to return true", async () => {
+        //Arrange
+        let userManagementApi = new UserManagementApi(configurationWithAuthHeader);
+        //Act
+        const response = await userManagementApi.revokePermission(<RoleDetails>
+          {
+            roles: [TDEIROLES.FLEX_DATA_GENERATOR],
+            tdei_org_id: seederData?.organizationId,
+            user_name: seederData?.user.email
+          });
+
+        //Assert
+        expect(response.data.data).toBe("Successful!");
+      });
+    });
+  });
+
+
 });
+
+
+

@@ -1,8 +1,8 @@
 import { existsSync } from "fs";
 import { readFile, writeFile } from "fs/promises";
-import { AuthApi, GTFSFlexServiceApi, GTFSPathwaysStationApi, OrganizationApi, RegisterResponse, User, UserManagementApi } from "tdei-management-client";
+import { AuthApi, GTFSFlexServiceApi, GTFSPathwaysStationApi, OrganizationApi, RoleDetails, User, UserManagementApi } from "tdei-management-client";
 import { TdeiObjectFaker } from "./tdei-object-faker";
-import { Utility } from "./utils";
+import { TDEIROLES, Utility } from "./utils";
 
 export interface ISeedData {
     organizationId: string,
@@ -41,7 +41,7 @@ class SeedData {
      * @param freshSeed if true, it will always generate new seed data otherwise read from local generated seed.data.json
      * @returns 
      */
-    public async generate(freshSeed: boolean = false) {
+    public async generate(freshSeed: boolean = false): Promise<ISeedData> {
         await this.setAuthentication();
 
         //Read from existing seed data if available else generate new seed data.
@@ -50,6 +50,7 @@ class SeedData {
             if (data) {
                 console.log("Serving from local seed data!");
                 this.data = JSON.parse(data);
+                return this.data;
             }
         }
         else {
@@ -59,8 +60,10 @@ class SeedData {
                 this.data.serviceId = await this.createService(this.data.organizationId);
                 this.data.stationId = await this.createStation(this.data.organizationId);
                 this.data.user = await this.createUser();
+                await this.assignOrgRoleToUser(this.data.user.email!, this.data.organizationId);
 
-                this.writeFile();
+                await this.writeFile();
+                return this.data;
             } catch (error) {
                 throw Error("Error generating seeding data : " + error);
             }
@@ -68,10 +71,10 @@ class SeedData {
         return this.data;
     }
 
-    private writeFile() {
-        writeFile('./seed.data.json', JSON.stringify(this.data), 'utf8')
-            .then(() => { console.log('Seed file created successfully !'); })
-            .catch(err => { console.error("Error generating seed file.  " + err); });
+    private async writeFile() {
+        await writeFile('./seed.data.json', JSON.stringify(this.data), 'utf8');
+        // .then(() => { console.log('Seed file created successfully !'); })
+        // .catch(err => { console.error("Error generating seed file.  " + err); });
     }
 
     private async createOrganization(): Promise<string> {
@@ -100,6 +103,18 @@ class SeedData {
         let stationApi = new GTFSPathwaysStationApi(this.configurationWithAuthHeader);
         const response = await stationApi.createStation(TdeiObjectFaker.getStation(orgId));
         return response.data.data!;
+    }
+
+    private async assignOrgRoleToUser(username: string, orgId: string): Promise<boolean> {
+        console.log("Assigning user org role");
+        let userManagementApi = new UserManagementApi(this.configurationWithAuthHeader);
+        let response = await userManagementApi.permission(<RoleDetails>
+            {
+                roles: [TDEIROLES.FLEX_DATA_GENERATOR, TDEIROLES.OSW_DATA_GENERATOR, TDEIROLES.PATHWAYS_DATA_GENERATOR],
+                tdei_org_id: orgId,
+                user_name: username
+            })
+        return true;
     }
 }
 
