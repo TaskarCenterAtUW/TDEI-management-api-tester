@@ -63,6 +63,23 @@ export class TdeiObjectFaker {
         };
     }
 
+    static getFakePolygon(): Polygon {
+        return {
+            type: PolygonTypeEnum.FeatureCollection,
+            features: [
+                {
+                    type: GeoJSONFeatureTypeEnum.Feature,
+                    properties: {},
+                    geometry: {
+                        // type: "Polygon",
+                        type: GeoJSONPolygonTypeEnum.Polygon,
+                        coordinates: []
+                    }
+                }
+            ]
+        };
+    }
+
     private static getCoordinates(): number[][] {
         var randomCoordinates: number[][] = [];
         var firstRandom = [
