@@ -4,7 +4,6 @@ import {
     AuthApi,
 } from 'tdei-management-client';
 import seed, {ISeedData} from '../data.seed';
-import {faker} from "@faker-js/faker";
 import {TdeiObjectFaker} from '../tdei-object-faker';
 
 describe('GTFS Pathways service', () => {
@@ -46,10 +45,10 @@ describe('GTFS Pathways service', () => {
                 const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithAuthHeader);
                 let payload = TdeiObjectFaker.getStation(seederData?.organizationId)
                 payload.station_name = <string>seederData?.stationName
-                const secondStationResponse = async () => {
+                const stationResponse = async () => {
                     await gtfsPathwaysApi.createStation(payload);
                 }
-                await expect(secondStationResponse()).rejects.toMatchObject({response: {status: 400}});
+                await expect(stationResponse()).rejects.toMatchObject({response: {status: 400}});
             });
         });
 

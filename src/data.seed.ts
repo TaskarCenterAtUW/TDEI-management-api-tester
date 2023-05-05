@@ -71,11 +71,11 @@ class SeedData {
                 console.log("Generating seed data");
                 this.data.organizationId = await this.createOrganization();
                 const service = await this.createService(this.data.organizationId);
-                this.data.serviceId = service?.id
-                this.data.serviceName = service?.name
+                this.data.serviceId = <string>service?.id
+                this.data.serviceName = <string>service?.name
                 const station = await this.createStation(this.data.organizationId);
-                this.data.stationId = station?.id
-                this.data.stationName = station?.name
+                this.data.stationId = <string>station?.id
+                this.data.stationName = <string>station?.name
                 this.data.user = await this.createUser();
                 await this.assignOrgRoleToUser(this.data.user.email!, this.data.organizationId);
 
