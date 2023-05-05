@@ -1,6 +1,6 @@
 import { existsSync } from "fs";
 import { readFile, writeFile } from "fs/promises";
-import { AuthApi, GTFSFlexServiceApi, GTFSPathwaysStationApi, OrganizationApi, RoleDetails, User, UserManagementApi } from "tdei-management-client";
+import { AuthApi, GTFSFlexServiceApi, GTFSPathwaysStationApi, OrganizationApi, RoleDetails, Service, ServiceUpdate, Station, StationUpdate, User, UserManagementApi } from "tdei-management-client";
 import { TdeiObjectFaker } from "./tdei-object-faker";
 import { TDEIROLES, Utility } from "./utils";
 
@@ -14,27 +14,38 @@ export interface StationInterface {
     name: string
 }
 
-export interface ISeedData {
-    organizationId: string,
-    user: User,
-    stationId: string,
-    stationName: string,
-    serviceId: string
-    serviceName: string
+export class SeedDetails {
+    organizationId: string | undefined;
+    user: User | undefined;
+    station: Station | undefined;
+    service: Service | undefined;
+
+    constructor(init?: Partial<SeedDetails>) {
+        Object.assign(this, init);
+    }
+
+    get updateStationObject() {
+        return <StationUpdate>{
+            station_name: this.station?.station_name,
+            tdei_station_id: this.station?.tdei_station_id,
+            polygon: this.station?.polygon,
+        }
+    }
+
+    get updateServiceObject() {
+        return <ServiceUpdate>{
+            service_name: this.service?.service_name,
+            tdei_service_id: this.service?.tdei_service_id,
+            polygon: this.service?.polygon,
+        }
+    }
 }
 
 class SeedData {
     private configurationWithAuthHeader = Utility.getConfiguration();
     private configurationWithoutAuthHeader = Utility.getConfiguration();
 
-    private data: ISeedData = {
-        organizationId: "",
-        user: {},
-        stationId: "",
-        stationName: "",
-        serviceId: "",
-        serviceName: ""
-    };
+    private data: SeedDetails = new SeedDetails();
 
     constructor() {
     }
@@ -46,7 +57,7 @@ class SeedData {
             password: this.configurationWithAuthHeader.password
         });
         this.configurationWithAuthHeader.baseOptions = {
-            headers: {...Utility.addAuthZHeader(loginResponse.data.access_token)}
+            headers: { ...Utility.addAuthZHeader(loginResponse.data.access_token) }
         };
     }
 
@@ -55,27 +66,23 @@ class SeedData {
      * @param freshSeed if true, it will always generate new seed data otherwise read from local generated seed.data.json
      * @returns
      */
-    public async generate(freshSeed: boolean = false): Promise<ISeedData> {
+    public async generate(freshSeed: boolean = false): Promise<SeedDetails> {
         await this.setAuthentication();
 
         //Read from existing seed data if available else generate new seed data.
         if (!freshSeed && existsSync('seed.data.json')) {
-            const data = await readFile('seed.data.json', {encoding: 'utf8'});
+            const data = await readFile('seed.data.json', { encoding: 'utf8' });
             if (data) {
                 console.log("Serving from local seed data!");
                 this.data = JSON.parse(data);
-                return this.data;
+                return new SeedDetails(this.data);
             }
         } else {
             try {
                 console.log("Generating seed data");
                 this.data.organizationId = await this.createOrganization();
-                const service = await this.createService(this.data.organizationId);
-                this.data.serviceId = <string>service?.id
-                this.data.serviceName = <string>service?.name
-                const station = await this.createStation(this.data.organizationId);
-                this.data.stationId = <string>station?.id
-                this.data.stationName = <string>station?.name
+                this.data.service = await this.createService(this.data.organizationId);
+                this.data.station = await this.createStation(this.data.organizationId);
                 this.data.user = await this.createUser();
                 await this.assignOrgRoleToUser(this.data.user.email!, this.data.organizationId);
 
@@ -90,8 +97,6 @@ class SeedData {
 
     private async writeFile() {
         await writeFile('./seed.data.json', JSON.stringify(this.data), 'utf8');
-        // .then(() => { console.log('Seed file created successfully !'); })
-        // .catch(err => { console.error("Error generating seed file.  " + err); });
     }
 
     private async createOrganization(): Promise<string> {
@@ -108,26 +113,24 @@ class SeedData {
         return response.data.data!;
     }
 
-    private async createStation(orgId: string): Promise<StationInterface> {
+    private async createStation(orgId: string): Promise<Station> {
         console.log("Creating station");
         let stationApi = new GTFSPathwaysStationApi(this.configurationWithAuthHeader);
         const payload = TdeiObjectFaker.getStation(orgId)
         const response = await stationApi.createStation(payload);
-        return {
-            id: response.data.data!,
-            name: payload.station_name
-        }
+
+        payload.tdei_station_id = response.data.data!;
+        return payload;
     }
 
-    private async createService(orgId: string): Promise<ServiceInterface> {
+    private async createService(orgId: string): Promise<Service> {
         console.log("Creating service");
         let userManagementApi = new GTFSFlexServiceApi(this.configurationWithAuthHeader);
         const payload = TdeiObjectFaker.getService(orgId)
         const response = await userManagementApi.createService(payload);
-        return {
-            id: response.data.data!,
-            name: payload.service_name
-        };
+
+        payload.tdei_service_id = response.data.data!;
+        return payload;
     }
 
     private async assignOrgRoleToUser(username: string, orgId: string): Promise<boolean> {
