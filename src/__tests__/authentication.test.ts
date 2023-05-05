@@ -1,7 +1,6 @@
-import { TDEIROLES, Utility } from "../utils";
-import { AuthApi, OrgRoles, Register, RoleDetails, Roles, Token, User, UserManagementApi } from "tdei-management-client";
+import { Utility } from "../utils";
+import { AuthApi, Token } from "tdei-management-client";
 import { faker } from '@faker-js/faker';
-import { TdeiObjectFaker } from "../tdei-object-faker";
 
 describe("Authentication service", () => {
   beforeAll(async () => {
@@ -14,14 +13,12 @@ describe("Authentication service", () => {
         let configuration = Utility.getConfiguration();
         let generalAPI = new AuthApi(configuration);
         //Act
-        const login = async () => {
-          await generalAPI.authenticate({
-            username: faker.internet.email(),
-            password: faker.internet.password()
-          });
-        }
+        const login = generalAPI.authenticate({
+          username: faker.internet.email(),
+          password: faker.internet.password()
+        });
         //Assert
-        await expect(login()).rejects.toMatchObject({ response: { status: 401 } });
+        await expect(login).rejects.toMatchObject({ response: { status: 401 } });
       });
     });
 
@@ -56,11 +53,9 @@ describe("Authentication service", () => {
         let configuration = Utility.getConfiguration();
         let generalAPI = new AuthApi(configuration);
         //Act
-        const refreshToken = async () => {
-          await generalAPI.refreshToken("random_refresh_token");
-        }
+        const refreshToken = generalAPI.refreshToken("random_refresh_token");
         //Assert
-        await expect(refreshToken()).rejects.toMatchObject({ response: { status: 500 } });
+        await expect(refreshToken).rejects.toMatchObject({ response: { status: 500 } });
       });
     });
 
@@ -69,11 +64,11 @@ describe("Authentication service", () => {
         //Arrange
         let configuration = Utility.getConfiguration();
         let generalAPI = new AuthApi(configuration);
-        //Act
         let loginResponse = await generalAPI.authenticate({
           username: configuration.username,
           password: configuration.password
         });
+        //Act
         let response = await generalAPI.refreshToken(loginResponse.data.refresh_token!);
         //Assert
         expect(response.data).toMatchObject(
