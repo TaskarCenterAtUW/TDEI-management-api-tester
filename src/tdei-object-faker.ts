@@ -17,15 +17,6 @@ export class TdeiObjectFaker {
         };
     }
 
-    static getUpdateStation(stationId: string | undefined): StationUpdate {
-        return <StationUpdate>{
-            station_name: faker.name.firstName() + "_Station",
-            tdei_station_id: stationId,
-            polygon: this.getPolygon()
-        };
-    }
-
-
     static getUser(): Register {
         return <Register>{
             email: faker.internet.email(),
@@ -47,6 +38,13 @@ export class TdeiObjectFaker {
     }
 
     static getInvalidPolygon(): Polygon {
+        var randomCoordinates: number[][] = [];
+        var firstRandom = [
+            this.getRandomNumber(70, 79),
+            this.getRandomNumber(12, 15)
+        ];
+        randomCoordinates.push(firstRandom);
+
         return {
             type: PolygonTypeEnum.FeatureCollection,
             features: [
@@ -56,7 +54,7 @@ export class TdeiObjectFaker {
                     geometry: {
                         // type: "Polygon",
                         type: GeoJSONPolygonTypeEnum.Polygon,
-                        coordinates: []
+                        coordinates: [randomCoordinates]
                     }
                 }
             ]
@@ -74,23 +72,6 @@ export class TdeiObjectFaker {
                         // type: "Polygon",
                         type: GeoJSONPolygonTypeEnum.Polygon,
                         coordinates: [this.getCoordinates()]
-                    }
-                }
-            ]
-        };
-    }
-
-    static getFakePolygon(): Polygon {
-        return {
-            type: PolygonTypeEnum.FeatureCollection,
-            features: [
-                {
-                    type: GeoJSONFeatureTypeEnum.Feature,
-                    properties: {},
-                    geometry: {
-                        // type: "Polygon",
-                        type: GeoJSONPolygonTypeEnum.Polygon,
-                        coordinates: []
                     }
                 }
             ]

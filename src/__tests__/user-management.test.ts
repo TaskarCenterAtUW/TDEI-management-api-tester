@@ -1,13 +1,13 @@
 import { TDEIROLES, Utility } from "../utils";
 import { OrgRoles, Register, RoleDetails, Roles, User, UserManagementApi } from "tdei-management-client";
 import { faker } from '@faker-js/faker';
-import seed, { ISeedData } from "../data.seed";
+import seed, { SeedDetails } from "../data.seed";
 import { TdeiObjectFaker } from "../tdei-object-faker";
 
 describe("User Management service", () => {
   let configurationWithAuthHeader = Utility.getConfiguration();
   let configurationWithoutAuthHeader = Utility.getConfiguration();
-  let seederData: ISeedData | undefined = undefined;
+  let seederData: SeedDetails | undefined = undefined;
   beforeAll(async () => {
     seederData = await seed.generate();
     const loginResponse = await Utility.login(configurationWithAuthHeader.username!, configurationWithAuthHeader.password!);
@@ -135,7 +135,7 @@ describe("User Management service", () => {
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
             tdei_org_id: seederData?.organizationId,
-            user_name: seederData?.user.email
+            user_name: seederData?.user?.email
           })
         //Assert
         await expect(assignPermission).rejects.toMatchObject({ response: { status: 401 } });;
@@ -180,7 +180,7 @@ describe("User Management service", () => {
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
             tdei_org_id: seederData?.organizationId,
-            user_name: seederData?.user.email
+            user_name: seederData?.user!.email
           });
 
         //Assert
@@ -197,7 +197,7 @@ describe("User Management service", () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
         //Act
-        const orgRoles = userManagementApi.orgRoles(seederData?.user.email!);
+        const orgRoles = userManagementApi.orgRoles(seederData?.user?.email!);
         //Assert
         await expect(orgRoles).rejects.toMatchObject({ response: { status: 401 } });;
       });
@@ -207,13 +207,13 @@ describe("User Management service", () => {
       it("When fetching logged in user org roles, Expect to return user org roles of type OrgRoles", async () => {
         //Arrange
         let configuration = Utility.getConfiguration();
-        const loginResponse = await Utility.login(seederData?.user.email!, "Tester01*");
+        const loginResponse = await Utility.login(seederData?.user?.email!, "Tester01*");
         configuration.baseOptions = {
           headers: { ...Utility.addAuthZHeader(loginResponse.data.access_token) }
         };
         let userManagementApi = new UserManagementApi(configuration);
         //Act
-        const response = await userManagementApi.orgRoles(seederData?.user.id!);
+        const response = await userManagementApi.orgRoles(seederData?.user?.id!);
         //Assert
         expect(Array.isArray(response.data)).toBe(true);
         expect(response.data![0]).toMatchObject(<OrgRoles>{
@@ -236,7 +236,7 @@ describe("User Management service", () => {
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
             tdei_org_id: seederData?.organizationId,
-            user_name: seederData?.user.email
+            user_name: seederData?.user?.email
           })
 
         //Assert
@@ -284,7 +284,7 @@ describe("User Management service", () => {
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
             tdei_org_id: seederData?.organizationId,
-            user_name: seederData?.user.email
+            user_name: seederData?.user?.email
           });
 
         //Assert
