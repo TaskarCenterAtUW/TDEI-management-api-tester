@@ -46,6 +46,23 @@ export class TdeiObjectFaker {
         };
     }
 
+    static getInvalidPolygon(): Polygon {
+        return {
+            type: PolygonTypeEnum.FeatureCollection,
+            features: [
+                {
+                    type: GeoJSONFeatureTypeEnum.Feature,
+                    properties: {},
+                    geometry: {
+                        // type: "Polygon",
+                        type: GeoJSONPolygonTypeEnum.Polygon,
+                        coordinates: []
+                    }
+                }
+            ]
+        };
+    }
+
     static getPolygon(): Polygon {
         return {
             type: PolygonTypeEnum.FeatureCollection,
