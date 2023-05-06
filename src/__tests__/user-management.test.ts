@@ -2,24 +2,20 @@ import { Utility } from "../utils";
 import { AuthApi, Register, RoleDetails, Roles, User, UserManagementApi } from "tdei-management-client";
 import { faker } from '@faker-js/faker';
 import { it } from "node:test";
-import seed, { ISeedData } from "../data.seed";
+import seed, { SeedDetails } from "../data.seed";
 import { TdeiObjectFaker } from "../tdei-object-faker";
 
 describe("User Management service", () => {
   let configurationWithAuthHeader = Utility.getConfiguration();
   let configurationWithoutAuthHeader = Utility.getConfiguration();
-  let seederData: ISeedData | undefined = undefined;
+  let seederData: SeedDetails | undefined = undefined;
   beforeAll(async () => {
     seederData = await seed.generate();
-    let generalAPI = new AuthApi(configurationWithAuthHeader);
-    const loginResponse = await generalAPI.authenticate({
-      username: configurationWithAuthHeader.username,
-      password: configurationWithAuthHeader.password
-    });
+    const loginResponse = await Utility.login(configurationWithAuthHeader.username!, configurationWithAuthHeader.password!);
     configurationWithAuthHeader.baseOptions = {
       headers: { ...Utility.addAuthZHeader(loginResponse.data.access_token) }
     };
-  });
+  }, 50000);
 
   describe("Get Roles", () => {
     describe("Auth", () => {
@@ -27,9 +23,9 @@ describe("User Management service", () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
         //Act
-        const getRoles = async () => { await userManagementApi.roles(); }
+        const getRoles = userManagementApi.roles();
         //Assert
-        await expect(getRoles()).rejects.toMatchObject({ response: { status: 401 } });
+        await expect(getRoles).rejects.toMatchObject({ response: { status: 401 } });
       });
     });
 
@@ -72,42 +68,42 @@ describe("User Management service", () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
         //Act
-        const request = async () => { await userManagementApi.registerUser(<Register>{ password: 'Tester01*' }); }
+        const request = userManagementApi.registerUser(<Register>{ password: 'Tester01*' });
         //Assert
-        await expect(request()).rejects.toMatchObject({ response: { status: 400 } });
+        await expect(request).rejects.toMatchObject({ response: { status: 400 } });
       });
 
       it("When password not provided, expect to return HTTP status 400", async () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
         //Act
-        const request = async () => { await userManagementApi.registerUser(<Register>{ email: faker.internet.email() }); }
+        const request = userManagementApi.registerUser(<Register>{ email: faker.internet.email() });
         //Assert
-        await expect(request()).rejects.toMatchObject({ response: { status: 400 } });
+        await expect(request).rejects.toMatchObject({ response: { status: 400 } });
       });
       it("When no information provided, expect to return HTTP status 400", async () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
         //Act
-        const request = async () => { await userManagementApi.registerUser(<Register>{}); }
+        const request = userManagementApi.registerUser(<Register>{});
         //Assert
-        await expect(request()).rejects.toMatchObject({ response: { status: 400 } });
+        await expect(request).rejects.toMatchObject({ response: { status: 400 } });
       });
       it("When invalid email provided, expect to return HTTP status 400", async () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
         //Act
-        const request = async () => { await userManagementApi.registerUser(<Register>{ email: 'test_user', password: 'Tester01*' }); }
+        const request = userManagementApi.registerUser(<Register>{ email: 'test_user', password: 'Tester01*' });
         //Assert
-        await expect(request()).rejects.toMatchObject({ response: { status: 400 } });
+        await expect(request).rejects.toMatchObject({ response: { status: 400 } });
       });
       it("When invalid password provided, expect to return HTTP status 400", async () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
         //Act
-        const request = async () => { await userManagementApi.registerUser(<Register>{ email: faker.internet.email(), password: 'Tester' }); }
+        const request = userManagementApi.registerUser(<Register>{ email: faker.internet.email(), password: 'Tester' });
         //Assert
-        await expect(request()).rejects.toMatchObject({ response: { status: 400 } });
+        await expect(request).rejects.toMatchObject({ response: { status: 400 } });
       });
     });
 
@@ -278,3 +274,6 @@ describe("User Management service", () => {
 
 
 });
+
+
+

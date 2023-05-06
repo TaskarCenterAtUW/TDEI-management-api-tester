@@ -1,26 +1,51 @@
 import { existsSync } from "fs";
 import { readFile, writeFile } from "fs/promises";
-import { AuthApi, GTFSFlexServiceApi, GTFSPathwaysStationApi, OrganizationApi, RegisterResponse, User, UserManagementApi } from "tdei-management-client";
+import { AuthApi, GTFSFlexServiceApi, GTFSPathwaysStationApi, OrganizationApi, RoleDetails, Service, ServiceUpdate, Station, StationUpdate, User, UserManagementApi } from "tdei-management-client";
 import { TdeiObjectFaker } from "./tdei-object-faker";
-import { Utility } from "./utils";
+import { TDEIROLES, Utility } from "./utils";
 
-export interface ISeedData {
-    organizationId: string,
-    user: User,
-    stationId: string,
-    serviceId: string
+export interface ServiceInterface {
+    id: string,
+    name: string
+}
+
+export interface StationInterface {
+    id: string,
+    name: string
+}
+
+export class SeedDetails {
+    organizationId: string | undefined;
+    user: User | undefined;
+    station: Station | undefined;
+    service: Service | undefined;
+
+    constructor(init?: Partial<SeedDetails>) {
+        Object.assign(this, init);
+    }
+
+    get updateStationObject() {
+        return <StationUpdate>{
+            station_name: this.station?.station_name,
+            tdei_station_id: this.station?.tdei_station_id,
+            polygon: this.station?.polygon,
+        }
+    }
+
+    get updateServiceObject() {
+        return <ServiceUpdate>{
+            service_name: this.service?.service_name,
+            tdei_service_id: this.service?.tdei_service_id,
+            polygon: this.service?.polygon,
+        }
+    }
 }
 
 class SeedData {
     private configurationWithAuthHeader = Utility.getConfiguration();
     private configurationWithoutAuthHeader = Utility.getConfiguration();
 
-    private data: ISeedData = {
-        organizationId: "",
-        user: {},
-        stationId: "",
-        serviceId: ""
-    };
+    private data: SeedDetails = new SeedDetails();
 
     constructor() {
     }
@@ -37,11 +62,11 @@ class SeedData {
     }
 
     /**
-     * 
+     *
      * @param freshSeed if true, it will always generate new seed data otherwise read from local generated seed.data.json
-     * @returns 
+     * @returns
      */
-    public async generate(freshSeed: boolean = false) {
+    public async generate(freshSeed: boolean = false): Promise<SeedDetails> {
         await this.setAuthentication();
 
         //Read from existing seed data if available else generate new seed data.
@@ -50,17 +75,19 @@ class SeedData {
             if (data) {
                 console.log("Serving from local seed data!");
                 this.data = JSON.parse(data);
+                return new SeedDetails(this.data);
             }
-        }
-        else {
+        } else {
             try {
                 console.log("Generating seed data");
                 this.data.organizationId = await this.createOrganization();
-                this.data.serviceId = await this.createService(this.data.organizationId);
-                this.data.stationId = await this.createStation(this.data.organizationId);
+                this.data.service = await this.createService(this.data.organizationId);
+                this.data.station = await this.createStation(this.data.organizationId);
                 this.data.user = await this.createUser();
+                await this.assignOrgRoleToUser(this.data.user.email!, this.data.organizationId);
 
-                this.writeFile();
+                await this.writeFile();
+                return this.data;
             } catch (error) {
                 throw Error("Error generating seeding data : " + error);
             }
@@ -68,10 +95,8 @@ class SeedData {
         return this.data;
     }
 
-    private writeFile() {
-        writeFile('./seed.data.json', JSON.stringify(this.data), 'utf8')
-            .then(() => { console.log('Seed file created successfully !'); })
-            .catch(err => { console.error("Error generating seed file.  " + err); });
+    private async writeFile() {
+        await writeFile('./seed.data.json', JSON.stringify(this.data), 'utf8');
     }
 
     private async createOrganization(): Promise<string> {
@@ -88,18 +113,36 @@ class SeedData {
         return response.data.data!;
     }
 
-    private async createStation(orgId: string): Promise<string> {
+    private async createStation(orgId: string): Promise<Station> {
         console.log("Creating station");
-        let userManagementApi = new GTFSFlexServiceApi(this.configurationWithAuthHeader);
-        const response = await userManagementApi.createService(TdeiObjectFaker.getService(orgId));
-        return response.data.data!;
+        let stationApi = new GTFSPathwaysStationApi(this.configurationWithAuthHeader);
+        const payload = TdeiObjectFaker.getStation(orgId)
+        const response = await stationApi.createStation(payload);
+
+        payload.tdei_station_id = response.data.data!;
+        return payload;
     }
 
-    private async createService(orgId: string): Promise<string> {
+    private async createService(orgId: string): Promise<Service> {
         console.log("Creating service");
-        let stationApi = new GTFSPathwaysStationApi(this.configurationWithAuthHeader);
-        const response = await stationApi.createStation(TdeiObjectFaker.getStation(orgId));
-        return response.data.data!;
+        let userManagementApi = new GTFSFlexServiceApi(this.configurationWithAuthHeader);
+        const payload = TdeiObjectFaker.getService(orgId)
+        const response = await userManagementApi.createService(payload);
+
+        payload.tdei_service_id = response.data.data!;
+        return payload;
+    }
+
+    private async assignOrgRoleToUser(username: string, orgId: string): Promise<boolean> {
+        console.log("Assigning user org role");
+        let userManagementApi = new UserManagementApi(this.configurationWithAuthHeader);
+        let response = await userManagementApi.permission(<RoleDetails>
+            {
+                roles: [TDEIROLES.FLEX_DATA_GENERATOR, TDEIROLES.OSW_DATA_GENERATOR, TDEIROLES.PATHWAYS_DATA_GENERATOR],
+                tdei_org_id: orgId,
+                user_name: username
+            })
+        return true;
     }
 }
 

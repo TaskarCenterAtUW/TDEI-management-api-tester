@@ -1,5 +1,5 @@
 
-import { Configuration } from "tdei-management-client";
+import { AuthApi, Configuration } from "tdei-management-client";
 import config from "./test-harness.json";
 /**
  * Utility class.
@@ -10,6 +10,15 @@ export class Utility {
       username: config.system.username,
       password: config.system.password,
       basePath: config.system.baseUrl
+    });
+  }
+
+  public static async login(username: string, password: string) {
+    let configuration = Utility.getConfiguration();
+    let generalAPI = new AuthApi(configuration);
+    return await generalAPI.authenticate({
+      username: username,
+      password: password
     });
   }
 
