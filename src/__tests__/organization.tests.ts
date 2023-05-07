@@ -53,8 +53,7 @@ describe("Organization service", () => {
       let oraganizationApi = new OrganizationApi(configurationWithAuthHeader);
       //Act
       let payload = TdeiObjectFaker.getOrganization();
-      //TODO: correct it to name instead of id
-      payload.org_name = <string>seederData?.organizationId
+      payload.org_name = <string>seederData?.organization?.org_name
 
       const oraganizationResponse = await oraganizationApi.createOrganization(payload);
       //Assert
@@ -150,7 +149,7 @@ describe("Organization service", () => {
           //Arrange
           let oraganizationApi = new OrganizationApi(configurationWithAuthHeader);
           //Act
-          let payload = TdeiObjectFaker.getOrganization();
+          let payload = seederData?.organization!;
           payload.org_name = '';
     
           const oraganizationResponse = oraganizationApi.updateOrganization(payload);
@@ -163,7 +162,7 @@ describe("Organization service", () => {
           //Arrange
           let oraganizationApi = new OrganizationApi(configurationWithAuthHeader);
           //Act
-          let payload = TdeiObjectFaker.getOrganization();
+          let payload = seederData?.organization!;
           payload.phone = '';
     
           const oraganizationResponse = oraganizationApi.updateOrganization(payload);
@@ -176,7 +175,7 @@ describe("Organization service", () => {
           //Arrange
           let oraganizationApi = new OrganizationApi(configurationWithAuthHeader);
           //Act
-          let payload = TdeiObjectFaker.getOrganization();
+          let payload = seederData?.organization!;
           payload.address = '';
     
           const oraganizationResponse = oraganizationApi.updateOrganization(payload);
@@ -189,7 +188,7 @@ describe("Organization service", () => {
           //Arrange
           let oraganizationApi = new OrganizationApi(configurationWithAuthHeader);
           //Act
-          let payload = TdeiObjectFaker.getOrganization();
+          let payload = seederData?.organization!;
           payload.polygon = TdeiObjectFaker.getInvalidPolygon();
     
           const oraganizationResponse = oraganizationApi.updateOrganization(payload);
@@ -200,17 +199,16 @@ describe("Organization service", () => {
         });
       });
 
-      describe('Get Station', () => {
+      describe('Get Organizations', () => {
         describe('Auth', () => {
           it("When no auth token provided, Expect to return HTTP status 401", async () => {
             //Arrange
             let oraganizationApi = new OrganizationApi(configurationWithoutAuthHeader);
             //Act
-            const request = async () => {
-              await oraganizationApi.getOrganization();
-            }
+            const organizationResponse = oraganizationApi.getOrganization();
+          
             //Assert
-            expect(request()).rejects.toMatchObject({response: { status: 401 } })
+            expect(organizationResponse).rejects.toMatchObject({response: { status: 401 } })
           });
         });
 
@@ -248,7 +246,7 @@ describe("Organization service", () => {
             let oraganizationApi = new OrganizationApi(configurationWithAuthHeader);
 
             //Act
-            const oraganizationResponse = await oraganizationApi.getOrganization(undefined, seederData?.service?.service_name, undefined, undefined, undefined);
+            const oraganizationResponse = await oraganizationApi.getOrganization(undefined, seederData?.organization?.org_name, undefined, undefined, undefined);
 
             const data = oraganizationResponse.data;
 
@@ -256,26 +254,10 @@ describe("Organization service", () => {
               expect(oraganizationResponse.status).toBe(200);
               expect(Array.isArray(data)).toBe(true);
               expect(data).toBeInstanceOf(Array);
-              expect(data[0].name).toEqual(seederData?.service?.service_name);
+              expect(data[0].name).toEqual(seederData?.organization?.org_name);
             });
 
-            it('When searched with bbox name filter, Expect to return list of organizations matching fiter', async () => {
-            //Arrange
-            let oraganizationApi = new OrganizationApi(configurationWithAuthHeader);
-
-            //Act
-            //TODO: replace undefined with bbox
-            const oraganizationResponse = await oraganizationApi.getOrganization(undefined, undefined, undefined, undefined, undefined);
-
-            const data = oraganizationResponse.data;
-
-            //Assert
-              expect(oraganizationResponse.status).toBe(200);
-              expect(Array.isArray(data)).toBe(true);
-              expect(data).toBeInstanceOf(Array);
-              expect(data[0].bbox).toEqual(seederData?.service?.service_name);
-            });
-
+            it.todo('When searched with bbox name filter, Expect to return list of organizations matching fiter');
         });
     });
     
@@ -301,7 +283,7 @@ describe("Organization service", () => {
            const organizationResponse = await oraganizationApi.deleteOrganization(seederData?.organizationId!, true);
               
            //Assert
-          await expect(organizationResponse.status).toBe(200);
+           expect(organizationResponse.status).toBe(200);
           });
       })
     });
