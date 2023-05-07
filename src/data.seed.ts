@@ -1,6 +1,6 @@
 import { existsSync } from "fs";
 import { readFile, writeFile } from "fs/promises";
-import { AuthApi, GTFSFlexServiceApi, GTFSPathwaysStationApi, OrganizationApi, RoleDetails, Service, ServiceUpdate, Station, StationUpdate, User, UserManagementApi } from "tdei-management-client";
+import { AuthApi, GTFSFlexServiceApi, GTFSPathwaysStationApi, Organization, OrganizationApi, RoleDetails, Service, ServiceUpdate, Station, StationUpdate, User, UserManagementApi } from "tdei-management-client";
 import { TdeiObjectFaker } from "./tdei-object-faker";
 import { TDEIROLES, Utility } from "./utils";
 
@@ -16,6 +16,7 @@ export interface StationInterface {
 
 export class SeedDetails {
     organizationId: string | undefined;
+    organization: Organization | undefined;
     user: User | undefined;
     station: Station | undefined;
     service: Service | undefined;
@@ -80,7 +81,8 @@ class SeedData {
         } else {
             try {
                 console.log("Generating seed data");
-                this.data.organizationId = await this.createOrganization();
+                this.data.organizationId = await this.createOrganizationId();
+                this.data.organization = await this.createOrganization();
                 this.data.service = await this.createService(this.data.organizationId);
                 this.data.station = await this.createStation(this.data.organizationId);
                 this.data.user = await this.createUser();
@@ -99,11 +101,20 @@ class SeedData {
         await writeFile('./seed.data.json', JSON.stringify(this.data), 'utf8');
     }
 
-    private async createOrganization(): Promise<string> {
+    private async createOrganizationId(): Promise<string> {
         console.log("Creating org");
         let orgApi = new OrganizationApi(this.configurationWithAuthHeader);
         const response = await orgApi.createOrganization(TdeiObjectFaker.getOrganization());
         return response.data.data!;
+    }
+
+    private async createOrganization(): Promise<Organization> {
+        console.log("Creating org");
+        let orgApi = new OrganizationApi(this.configurationWithAuthHeader);
+        const payload = TdeiObjectFaker.getOrganization();
+        const response = await orgApi.createOrganization(payload);
+        payload.tdei_org_id = response.data.data!;
+        return payload;
     }
 
     private async createUser(): Promise<User> {
