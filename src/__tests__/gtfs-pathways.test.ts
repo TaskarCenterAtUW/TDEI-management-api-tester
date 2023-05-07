@@ -27,7 +27,7 @@ describe('GTFS Pathways service', () => {
             it('When no auth token provided, Expect to return HTTP status 401', async () => {
                 const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithoutAuthHeader);
 
-                const stationResponse = gtfsPathwaysApi.createStation(TdeiObjectFaker.getStation(seederData?.organizationId));
+                const stationResponse = gtfsPathwaysApi.createStation(TdeiObjectFaker.getStation(seederData?.organization?.tdei_org_id));
 
                 await expect(stationResponse).rejects.toMatchObject({ response: { status: 401 } });
             });
@@ -37,7 +37,7 @@ describe('GTFS Pathways service', () => {
             it('When creating new station, Expect to return newly created station id', async () => {
                 const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithAuthHeader);
 
-                const stationResponse = await gtfsPathwaysApi.createStation(TdeiObjectFaker.getStation(seederData?.organizationId));
+                const stationResponse = await gtfsPathwaysApi.createStation(TdeiObjectFaker.getStation(seederData?.organization?.tdei_org_id));
 
                 expect(stationResponse.status).toBe(200);
                 expect(stationResponse.data.data?.length).toBeGreaterThan(0);
@@ -45,7 +45,7 @@ describe('GTFS Pathways service', () => {
 
             it('When creating new station with same station_name, Expect to return HTTP Status 400', async () => {
                 const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithAuthHeader);
-                let payload = TdeiObjectFaker.getStation(seederData?.organizationId);
+                let payload = TdeiObjectFaker.getStation(seederData?.organization?.tdei_org_id);
                 payload.station_name = <string>seederData?.station?.station_name;
 
                 const stationResponse = gtfsPathwaysApi.createStation(payload);
@@ -57,7 +57,7 @@ describe('GTFS Pathways service', () => {
         describe('Validation', () => {
             it('When creating new station with empty station_name, Expect to return HTTP Status 400', async () => {
                 const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithAuthHeader);
-                let payload = TdeiObjectFaker.getStation(seederData?.organizationId);
+                let payload = TdeiObjectFaker.getStation(seederData?.organization?.tdei_org_id);
                 payload.station_name = '';
 
                 const stationResponse = gtfsPathwaysApi.createStation(payload);
@@ -67,7 +67,7 @@ describe('GTFS Pathways service', () => {
 
             it('When creating new station with empty tdei_org_id, Expect to return HTTP Status 400', async () => {
                 const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithAuthHeader);
-                let payload = TdeiObjectFaker.getStation(seederData?.organizationId);
+                let payload = TdeiObjectFaker.getStation(seederData?.organization?.tdei_org_id);
                 payload.tdei_org_id = '';
 
                 const stationResponse = gtfsPathwaysApi.createStation(payload);
@@ -77,7 +77,7 @@ describe('GTFS Pathways service', () => {
 
             it('When creating new station with invalid polygon, Expect to return HTTP Status 400', async () => {
                 const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithAuthHeader);
-                let payload = TdeiObjectFaker.getStation(seederData?.organizationId);
+                let payload = TdeiObjectFaker.getStation(seederData?.organization?.tdei_org_id);
                 payload.polygon = TdeiObjectFaker.getInvalidPolygon();
 
                 const stationResponse = gtfsPathwaysApi.createStation(payload);
@@ -93,7 +93,7 @@ describe('GTFS Pathways service', () => {
                 const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithoutAuthHeader);
                 let payload = seederData?.updateStationObject!;
 
-                const stationResponse = gtfsPathwaysApi.updateStation(payload, <string>seederData?.organizationId)
+                const stationResponse = gtfsPathwaysApi.updateStation(payload, <string>seederData?.organization?.tdei_org_id)
 
                 await expect(stationResponse).rejects.toMatchObject({ response: { status: 401 } });
             });
@@ -104,7 +104,7 @@ describe('GTFS Pathways service', () => {
                 const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithAuthHeader);
                 let payload = seederData?.updateStationObject!;
 
-                const stationResponse = await gtfsPathwaysApi.updateStation(payload, <string>seederData?.organizationId);
+                const stationResponse = await gtfsPathwaysApi.updateStation(payload, <string>seederData?.organization?.tdei_org_id);
 
                 expect(stationResponse.status).toBe(200);
             });
@@ -116,7 +116,7 @@ describe('GTFS Pathways service', () => {
                 let payload = seederData?.updateStationObject!;
                 payload.station_name = '';
 
-                const stationResponse = gtfsPathwaysApi.updateStation(payload, <string>seederData?.organizationId);
+                const stationResponse = gtfsPathwaysApi.updateStation(payload, <string>seederData?.organization?.tdei_org_id);
 
                 await expect(stationResponse).rejects.toMatchObject({ response: { status: 400 } });
             });
@@ -135,7 +135,7 @@ describe('GTFS Pathways service', () => {
                 let payload = seederData?.updateStationObject!;
                 payload.station_name = '';
 
-                const stationResponse = gtfsPathwaysApi.updateStation(payload, <string>seederData?.organizationId);
+                const stationResponse = gtfsPathwaysApi.updateStation(payload, <string>seederData?.organization?.tdei_org_id);
 
                 await expect(stationResponse).rejects.toMatchObject({ response: { status: 400 } });
             });
@@ -145,7 +145,7 @@ describe('GTFS Pathways service', () => {
                 let payload = seederData?.updateStationObject!;
                 payload.polygon = TdeiObjectFaker.getInvalidPolygon();
 
-                const stationResponse = gtfsPathwaysApi.updateStation(payload, <string>seederData?.organizationId);
+                const stationResponse = gtfsPathwaysApi.updateStation(payload, <string>seederData?.organization?.tdei_org_id);
 
                 await expect(stationResponse).rejects.toMatchObject({ response: { status: 400 } });
             });
@@ -177,14 +177,14 @@ describe('GTFS Pathways service', () => {
             it('When searched with tdei_org_id filter, Expect to return list of Stations matching filter', async () => {
                 const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithAuthHeader);
 
-                const stationResponse = await gtfsPathwaysApi.getStation(undefined, undefined, seederData?.organizationId);
+                const stationResponse = await gtfsPathwaysApi.getStation(undefined, undefined, seederData?.organization?.tdei_org_id);
 
                 const data = stationResponse.data;
 
                 expect(stationResponse.status).toBe(200);
                 expect(Array.isArray(data)).toBe(true);
                 expect(data).toBeInstanceOf(Array);
-                expect(data[0].tdei_org_id).toEqual(seederData?.organizationId);
+                expect(data[0].tdei_org_id).toEqual(seederData?.organization?.tdei_org_id);
             });
 
             it('When searched with station name filter, Expect to return list of Stations matching filter', async () => {
@@ -219,7 +219,7 @@ describe('GTFS Pathways service', () => {
             it('When no auth token provided, Expect to return HTTP status 401', async () => {
                 const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithoutAuthHeader);
 
-                const stationResponse = gtfsPathwaysApi.setServiceStatus(seederData?.organizationId!, <string>seederData?.station?.tdei_station_id!, true);
+                const stationResponse = gtfsPathwaysApi.setServiceStatus(seederData?.organization?.tdei_org_id!, <string>seederData?.station?.tdei_station_id!, true);
 
                 await expect(stationResponse).rejects.toMatchObject({ response: { status: 401 } });
             });
@@ -227,7 +227,7 @@ describe('GTFS Pathways service', () => {
             it('When deleting station id, Expect to return success', async () => {
                 const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithAuthHeader);
 
-                const stationResponse = await gtfsPathwaysApi.setServiceStatus(seederData?.organizationId!, <string>seederData?.station?.tdei_station_id!, true);
+                const stationResponse = await gtfsPathwaysApi.setServiceStatus(seederData?.organization?.tdei_org_id!, <string>seederData?.station?.tdei_station_id!, true);
 
                 expect(stationResponse.status).toBe(200);
             });

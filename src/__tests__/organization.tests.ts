@@ -229,14 +229,14 @@ describe("Organization service", () => {
             let oraganizationApi = new OrganizationApi(configurationWithAuthHeader);
 
             //Act
-            const oraganizationResponse = await oraganizationApi.getOrganization(seederData?.organizationId);
+            const oraganizationResponse = await oraganizationApi.getOrganization(seederData?.organization?.tdei_org_id);
 
             const data = oraganizationResponse.data;
 
               //Assert
               expect(oraganizationResponse.status).toBe(200);
               expect(Array.isArray(data)).toBe(true);
-              expect(data[0].tdei_org_id).toEqual(seederData?.organizationId);
+              expect(data[0].tdei_org_id).toEqual(seederData?.organization?.tdei_org_id);
             });
 
             it('When searched with organization name filter, Expect to return list of organizations matching fiter', async () => {
@@ -266,7 +266,7 @@ describe("Organization service", () => {
             let oraganizationApi = new OrganizationApi(configurationWithoutAuthHeader);
 
             //Act
-            const organizationResponse = oraganizationApi.deleteOrganization(seederData?.organizationId!, true);
+            const organizationResponse = oraganizationApi.deleteOrganization(seederData?.organization?.tdei_org_id!, true);
 
             //Assert
               await expect(organizationResponse).rejects.toMatchObject({ response: { status: 401 } });
@@ -277,7 +277,7 @@ describe("Organization service", () => {
           let oraganizationApi = new OrganizationApi(configurationWithAuthHeader);
 
           //Act
-           const organizationResponse = await oraganizationApi.deleteOrganization(seederData?.organizationId!, true);
+           const organizationResponse = await oraganizationApi.deleteOrganization(seederData?.organization?.tdei_org_id!, true);
               
            //Assert
            expect(organizationResponse.status).toBe(200);
