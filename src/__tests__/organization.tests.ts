@@ -138,7 +138,6 @@ describe("Organization service", () => {
         const organizationResponse = await oraganizationApi.updateOrganization(TdeiObjectFaker.getOrganization());
         //Assert
         expect(organizationResponse.status).toBe(200);
-        console.log(organizationResponse);
         expect(organizationResponse.data).toBeGreaterThan(0);
   
       });
@@ -230,14 +229,13 @@ describe("Organization service", () => {
             let oraganizationApi = new OrganizationApi(configurationWithAuthHeader);
 
             //Act
-            const oraganizationResponse = await oraganizationApi.getOrganization(seederData?.organizationId, undefined, undefined, undefined, undefined);
+            const oraganizationResponse = await oraganizationApi.getOrganization(seederData?.organizationId);
 
             const data = oraganizationResponse.data;
 
-            //Assert
+              //Assert
               expect(oraganizationResponse.status).toBe(200);
               expect(Array.isArray(data)).toBe(true);
-              expect(data).toBeInstanceOf(Array);
               expect(data[0].tdei_org_id).toEqual(seederData?.organizationId);
             });
 
@@ -246,14 +244,13 @@ describe("Organization service", () => {
             let oraganizationApi = new OrganizationApi(configurationWithAuthHeader);
 
             //Act
-            const oraganizationResponse = await oraganizationApi.getOrganization(undefined, seederData?.organization?.org_name, undefined, undefined, undefined);
+            const oraganizationResponse = await oraganizationApi.getOrganization(undefined, seederData?.organization?.org_name);
 
             const data = oraganizationResponse.data;
 
             //Assert
               expect(oraganizationResponse.status).toBe(200);
               expect(Array.isArray(data)).toBe(true);
-              expect(data).toBeInstanceOf(Array);
               expect(data[0].name).toEqual(seederData?.organization?.org_name);
             });
 
