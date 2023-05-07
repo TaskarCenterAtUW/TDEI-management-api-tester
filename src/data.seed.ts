@@ -15,7 +15,6 @@ export interface StationInterface {
 }
 
 export class SeedDetails {
-    organizationId: string | undefined;
     organization: Organization | undefined;
     user: User | undefined;
     station: Station | undefined;
@@ -81,12 +80,11 @@ class SeedData {
         } else {
             try {
                 console.log("Generating seed data");
-                this.data.organizationId = await this.createOrganizationId();
                 this.data.organization = await this.createOrganization();
-                this.data.service = await this.createService(this.data.organizationId);
-                this.data.station = await this.createStation(this.data.organizationId);
+                this.data.service = await this.createService(this.data.organization.tdei_org_id!);
+                this.data.station = await this.createStation(this.data.organization.tdei_org_id!);
                 this.data.user = await this.createUser();
-                await this.assignOrgRoleToUser(this.data.user.email!, this.data.organizationId);
+                await this.assignOrgRoleToUser(this.data.user.email!, this.data.organization.tdei_org_id!);
 
                 await this.writeFile();
                 return this.data;
@@ -99,13 +97,6 @@ class SeedData {
 
     private async writeFile() {
         await writeFile('./seed.data.json', JSON.stringify(this.data), 'utf8');
-    }
-
-    private async createOrganizationId(): Promise<string> {
-        console.log("Creating org");
-        let orgApi = new OrganizationApi(this.configurationWithAuthHeader);
-        const response = await orgApi.createOrganization(TdeiObjectFaker.getOrganization());
-        return response.data.data!;
     }
 
     private async createOrganization(): Promise<Organization> {
