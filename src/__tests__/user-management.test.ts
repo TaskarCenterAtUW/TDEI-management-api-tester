@@ -134,7 +134,7 @@ describe("User Management service", () => {
         const assignPermission = userManagementApi.permission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organizationId,
+            tdei_org_id: seederData?.organization?.tdei_org_id,
             user_name: seederData?.user?.email
           })
         //Assert
@@ -149,7 +149,7 @@ describe("User Management service", () => {
         const assignPermission = userManagementApi.permission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organizationId,
+            tdei_org_id: seederData?.organization?.tdei_org_id,
             user_name: faker.internet.email() //not registered email
           })
         //Assert
@@ -163,7 +163,7 @@ describe("User Management service", () => {
         const assignPermission = userManagementApi.permission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organizationId,
+            tdei_org_id: seederData?.organization?.tdei_org_id,
             user_name: configurationWithAuthHeader.username //logged in user account
           })
         //Assert
@@ -179,7 +179,7 @@ describe("User Management service", () => {
         const response = await userManagementApi.permission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organizationId,
+            tdei_org_id: seederData?.organization?.tdei_org_id,
             user_name: seederData?.user!.email
           });
 
@@ -235,7 +235,7 @@ describe("User Management service", () => {
         const assignPermission = userManagementApi.revokePermission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organizationId,
+            tdei_org_id: seederData?.organization?.tdei_org_id,
             user_name: seederData?.user?.email
           })
 
@@ -251,7 +251,7 @@ describe("User Management service", () => {
         const assignPermission = userManagementApi.revokePermission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organizationId,
+            tdei_org_id: seederData?.organization?.tdei_org_id,
             user_name: faker.internet.email() //not registered email
           })
 
@@ -266,7 +266,7 @@ describe("User Management service", () => {
         const assignPermission = userManagementApi.revokePermission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organizationId,
+            tdei_org_id: seederData?.organization?.tdei_org_id,
             user_name: configurationWithAuthHeader.username //logged in user account
           })
 
@@ -283,7 +283,7 @@ describe("User Management service", () => {
         const response = await userManagementApi.revokePermission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organizationId,
+            tdei_org_id: seederData?.organization?.tdei_org_id,
             user_name: seederData?.user?.email
           });
 
