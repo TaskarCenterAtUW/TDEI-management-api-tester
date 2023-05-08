@@ -1,10 +1,10 @@
-import {Utility} from '../utils';
+import { Utility } from '../utils';
 import {
     GTFSFlexServiceApi,
     AuthApi,
 } from 'tdei-management-client';
-import seed, {SeedDetails} from '../data.seed';
-import {TdeiObjectFaker} from '../tdei-object-faker';
+import seed, { SeedDetails } from '../data.seed';
+import { TdeiObjectFaker } from '../tdei-object-faker';
 
 describe('GTFS Flex service', () => {
     let configurationWithAuthHeader = Utility.getConfiguration();
@@ -18,7 +18,7 @@ describe('GTFS Flex service', () => {
             password: configurationWithAuthHeader.password
         });
         configurationWithAuthHeader.baseOptions = {
-            headers: {...Utility.addAuthZHeader(loginResponse.data.access_token)}
+            headers: { ...Utility.addAuthZHeader(loginResponse.data.access_token) }
         };
     }, 50000);
 
@@ -30,7 +30,7 @@ describe('GTFS Flex service', () => {
                 //Act
                 const serviceResponse = gtfsFlexApi.createService(TdeiObjectFaker.getService(<string>seederData?.organization?.tdei_org_id));
                 //Assert
-                await expect(serviceResponse).rejects.toMatchObject({response: {status: 401}});
+                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 401 } });
             });
         });
 
@@ -53,7 +53,7 @@ describe('GTFS Flex service', () => {
                 //Act
                 const serviceResponse = gtfsFlexApi.createService(payload);
                 //Assert
-                await expect(serviceResponse).rejects.toMatchObject({response: {status: 400}});
+                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 400 } });
             });
         });
 
@@ -66,7 +66,7 @@ describe('GTFS Flex service', () => {
                 //Act
                 const serviceResponse = gtfsFlexApi.createService(payload);
                 //Assert
-                await expect(serviceResponse).rejects.toMatchObject({response: {status: 400}});
+                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 400 } });
             });
 
             it('When creating new service with empty tdei_org_id, Expect to return HTTP Status 400', async () => {
@@ -77,7 +77,7 @@ describe('GTFS Flex service', () => {
                 //Act
                 const serviceResponse = gtfsFlexApi.createService(payload);
                 //Assert
-                await expect(serviceResponse).rejects.toMatchObject({response: {status: 400}});
+                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 400 } });
             });
 
             it('When creating new service with invalid polygon, Expect to return HTTP Status 400', async () => {
@@ -88,7 +88,7 @@ describe('GTFS Flex service', () => {
                 //Act
                 const serviceResponse = gtfsFlexApi.createService(payload);
                 //Assert
-                await expect(serviceResponse).rejects.toMatchObject({response: {status: 400}});
+                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 400 } });
             });
         });
     });
@@ -102,7 +102,7 @@ describe('GTFS Flex service', () => {
                 //Act
                 const serviceResponse = gtfsFlexApi.updateService(payload, <string>seederData?.organization?.tdei_org_id);
                 //Assert
-                await expect(serviceResponse).rejects.toMatchObject({response: {status: 401}});
+                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 401 } });
             });
         });
 
@@ -127,7 +127,7 @@ describe('GTFS Flex service', () => {
                 //Act
                 const serviceResponse = gtfsFlexApi.updateService(payload, <string>seederData?.organization?.tdei_org_id);
                 //Assert
-                await expect(serviceResponse).rejects.toMatchObject({response: {status: 400}});
+                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 400 } });
             });
 
             it('When updating new service with empty tdei_org_id, Expect to return HTTP Status 400', async () => {
@@ -137,7 +137,7 @@ describe('GTFS Flex service', () => {
                 //Act
                 const serviceResponse = gtfsFlexApi.updateService(payload, <string>'');
                 //Assert
-                await expect(serviceResponse).rejects.toMatchObject({response: {status: 404}});
+                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 404 } });
             });
 
             it('When updating new service with empty tdei_service_id, Expect to return HTTP Status 400', async () => {
@@ -148,7 +148,7 @@ describe('GTFS Flex service', () => {
                 //Act
                 const serviceResponse = gtfsFlexApi.updateService(payload, <string>seederData?.organization?.tdei_org_id);
                 //Assert
-                await expect(serviceResponse).rejects.toMatchObject({response: {status: 400}});
+                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 400 } });
             });
 
             it('When updating new service with invalid polygon, Expect to return HTTP Status 400', async () => {
@@ -159,7 +159,7 @@ describe('GTFS Flex service', () => {
                 //Act
                 const serviceResponse = gtfsFlexApi.updateService(payload, <string>seederData?.organization?.tdei_org_id);
                 //Assert
-                await expect(serviceResponse).rejects.toMatchObject({response: {status: 400}});
+                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 400 } });
             });
 
         });
@@ -173,7 +173,7 @@ describe('GTFS Flex service', () => {
                 //Act
                 const serviceResponse = gtfsFlexApi.getService();
                 //Assert
-                await expect(serviceResponse).rejects.toMatchObject({response: {status: 401}});
+                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 401 } });
             });
         })
 
@@ -223,9 +223,20 @@ describe('GTFS Flex service', () => {
                 //Assert
                 expect(serviceResponse.status).toBe(200);
                 expect(data).toBeInstanceOf(Array);
+                expect(data[0].tdei_service_id).toEqual(tdei_service_id);
             });
 
-            it.todo('When searched with bbox name filter, Expect to return list of Services matching filter');
+            it('When searched with bbox name filter, Expect to return list of Services matching filter', async () => {
+                //Arrange
+                const gtfsFlexApi = new GTFSFlexServiceApi(configurationWithAuthHeader);
+                const tdei_service_id = <string>seederData?.service?.tdei_service_id;
+                //Act
+                const serviceResponse = await gtfsFlexApi.getService(undefined, undefined, undefined, [121, 154, 134, 198]);
+                const data = serviceResponse.data;
+                //Assert
+                expect(serviceResponse.status).toBe(200);
+                expect(data).toBeInstanceOf(Array);
+            });
         })
     })
 
@@ -237,7 +248,7 @@ describe('GTFS Flex service', () => {
                 //Act
                 const serviceResponse = gtfsFlexApi.deleteService(seederData?.organization?.tdei_org_id!, <string>seederData?.service?.tdei_service_id!, true);
                 //Assert
-                await expect(serviceResponse).rejects.toMatchObject({response: {status: 401}});
+                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 401 } });
             });
 
             it('When deleting service id, Expect to return success', async () => {

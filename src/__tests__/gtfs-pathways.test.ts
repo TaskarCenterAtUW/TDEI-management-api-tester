@@ -210,7 +210,15 @@ describe('GTFS Pathways service', () => {
                 expect(data[0].tdei_station_id).toEqual(tdei_station_id);
             });
 
-            it.todo('When searched with bbox name filter, Expect to return list of Stations matching filter');
+            it('When searched with bbox name filter, Expect to return list of Stations matching filter', async () => {
+                const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithAuthHeader);
+
+                const stationResponse = await gtfsPathwaysApi.getStation(undefined, undefined, undefined, [123, 124, 154, 167]);
+                const data = stationResponse.data;
+
+                expect(stationResponse.status).toBe(200);
+                expect(data).toBeInstanceOf(Array);
+            });
         })
     })
 
