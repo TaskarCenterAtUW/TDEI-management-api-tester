@@ -1,9 +1,7 @@
 import { Utility } from "../utils";
-import { AuthApi, Register, RoleDetails, Roles, User, UserManagementApi, OrganizationApi, Organization, OrganizationList } from "tdei-management-client";
-import { faker } from '@faker-js/faker';
+import { AuthApi, OrganizationApi, Organization } from "tdei-management-client";
 import seed, { SeedDetails } from "../data.seed";
 import { TdeiObjectFaker } from "../tdei-object-faker";
-import exp from "node:constants";
 
 describe("Organization service", () => {
   let configurationWithAuthHeader = Utility.getConfiguration();
@@ -242,7 +240,8 @@ describe("Organization service", () => {
         let oraganizationApi = new OrganizationApi(configurationWithAuthHeader);
 
         //Act
-        const oraganizationResponse = await oraganizationApi.getOrganization(undefined, seederData?.organization?.org_name);
+        const oraganizationResponse = await oraganizationApi.getOrganization(seederData?.organization?.tdei_org_id, seederData?.organization?.org_name,
+          undefined, undefined, undefined, undefined);
 
         const data = oraganizationResponse.data;
 

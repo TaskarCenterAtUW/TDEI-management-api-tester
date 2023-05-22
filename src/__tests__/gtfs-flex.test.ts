@@ -238,7 +238,7 @@ describe('GTFS Flex service', () => {
                 expect(data).toBeInstanceOf(Array);
             });
         })
-    })
+    });
 
     describe('Delete Service', () => {
         describe('Auth', () => {

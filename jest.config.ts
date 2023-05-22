@@ -1,19 +1,20 @@
-import type {Config} from 'jest';
+import type { Config } from 'jest';
 
-export default async (): Promise<Config>=>{
+export default async (): Promise<Config> => {
     return {
-        verbose:true,
-        preset:'ts-jest',
-        testEnvironment:'node',
-        reporters:[
+        verbose: true,
+        preset: 'ts-jest',
+        testEnvironment: 'node',
+        globalSetup: "./global-setup.ts",
+        reporters: [
             "default",
-            ["./node_modules/jest-html-reporter",{
+            ["./node_modules/jest-html-reporter", {
                 "pageTitle": "Test Report",
                 "includeFailureMsg": true
             }]
         ],
-        transform:{
-            '^.+\\.(ts|tsx)?$':'ts-jest'
+        transform: {
+            '^.+\\.(ts|tsx)?$': 'ts-jest'
         }
     }
 }

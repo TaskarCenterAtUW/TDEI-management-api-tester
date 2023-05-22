@@ -1,7 +1,10 @@
 # TDEI-management-api-tester
 API tester for the tdei-management-client-API received from swagger
 
-# Steps
+## Test Enumeration
+Test enumeration is documented [here](https://github.com/TaskarCenterAtUW/TDEI-internaldocs/blob/master/adr/user-management-api-test-cases.md)
+
+## Steps
 - The testing rig is currently configured based on `test-harness.json` file.
 - An example of the file is already given as `test-harness.example.json`
 - `npm i`
