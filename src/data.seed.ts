@@ -16,7 +16,8 @@ export interface StationInterface {
 
 export class SeedDetails {
     organization: Organization | undefined;
-    user: User | undefined;
+    producer_user: User | undefined;
+    poc_user: User | undefined;
     station: Station | undefined;
     service: Service | undefined;
 
@@ -83,8 +84,11 @@ class SeedData {
                 this.data.organization = await this.createOrganization();
                 this.data.service = await this.createService(this.data.organization.tdei_org_id!);
                 this.data.station = await this.createStation(this.data.organization.tdei_org_id!);
-                this.data.user = await this.createUser();
-                await this.assignOrgRoleToUser(this.data.user.email!, this.data.organization.tdei_org_id!);
+                this.data.producer_user = await this.createUser();
+                this.data.poc_user = await this.createUser();
+                await this.assignOrgRoleToUser(this.data.producer_user.email!, this.data.organization.tdei_org_id!,
+                    [TDEIROLES.FLEX_DATA_GENERATOR, TDEIROLES.OSW_DATA_GENERATOR, TDEIROLES.PATHWAYS_DATA_GENERATOR]);
+                await this.assignOrgRoleToUser(this.data.poc_user.email!, this.data.organization.tdei_org_id!, [TDEIROLES.POC]);
 
                 await this.writeFile();
                 return this.data;
@@ -135,12 +139,12 @@ class SeedData {
         return payload;
     }
 
-    private async assignOrgRoleToUser(username: string, orgId: string): Promise<boolean> {
+    private async assignOrgRoleToUser(username: string, orgId: string, roles: TDEIROLES[]): Promise<boolean> {
         console.log("Assigning user org role");
         let userManagementApi = new UserManagementApi(this.configurationWithAuthHeader);
         let response = await userManagementApi.permission(<RoleDetails>
             {
-                roles: [TDEIROLES.FLEX_DATA_GENERATOR, TDEIROLES.OSW_DATA_GENERATOR, TDEIROLES.PATHWAYS_DATA_GENERATOR],
+                roles: roles,
                 tdei_org_id: orgId,
                 user_name: username
             })
