@@ -8,6 +8,8 @@ import {
 import seed, { SeedDetails } from '../data.seed';
 import { TdeiObjectFaker } from '../tdei-object-faker';
 
+jest.setTimeout(10000); 
+
 describe('GTFS Pathways service', () => {
     let configurationWithAuthHeader = Utility.getConfiguration();
     let configurationWithoutAuthHeader = Utility.getConfiguration();

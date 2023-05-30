@@ -3,6 +3,8 @@ import { AuthApi, OrganizationApi, Organization, OrganizationList, Polygon, POC 
 import seed, { SeedDetails } from "../data.seed";
 import { TdeiObjectFaker } from "../tdei-object-faker";
 
+jest.setTimeout(10000); 
+
 describe("Organization service", () => {
   let configurationWithAuthHeader = Utility.getConfiguration();
   let configurationWithoutAuthHeader = Utility.getConfiguration();

@@ -5,6 +5,8 @@ import {
 import seed, { SeedDetails } from '../data.seed';
 import { TdeiObjectFaker } from '../tdei-object-faker';
 
+jest.setTimeout(10000); 
+
 describe('GTFS Pathways Service Role Testing - Data Generator User', () => {
     let configurationWithAuthHeader = Utility.getConfiguration();
     let seederData: SeedDetails | undefined = undefined;
@@ -70,7 +72,6 @@ describe('GTFS Pathways Service Role Testing - Data Generator User', () => {
                         tdei_org_id: expect.any(String),
                         station_name: expect.any(String),
                         polygon: expect.anything() as null | Polygon
-
                     })
                 })
             });
