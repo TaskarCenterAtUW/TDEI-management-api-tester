@@ -1,6 +1,6 @@
 import { Utility } from '../utils';
 import {
-    GTFSPathwaysStationApi,
+    GTFSPathwaysStationApi, Polygon, Station,
 } from 'tdei-management-client';
 import seed, { SeedDetails } from '../data.seed';
 import { TdeiObjectFaker } from '../tdei-object-faker';
@@ -64,6 +64,15 @@ describe('GTFS Pathways Service Role Testing - Data Generator User', () => {
 
                 expect(stationResponse.status).toBe(200);
                 expect(stationResponse.data).toBeInstanceOf(Array);
+                stationResponse.data.forEach(station => {
+                    expect(station).toMatchObject(<Station>{
+                        tdei_station_id: expect.any(String),
+                        tdei_org_id: expect.any(String),
+                        station_name: expect.any(String),
+                        polygon: expect.anything() as null | Polygon
+
+                    })
+                })
             });
         })
     });
