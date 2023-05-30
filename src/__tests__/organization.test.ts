@@ -1,5 +1,5 @@
 import { Utility } from "../utils";
-import { AuthApi, OrganizationApi, Organization } from "tdei-management-client";
+import { AuthApi, OrganizationApi, Organization, OrganizationList, Polygon, POC } from "tdei-management-client";
 import seed, { SeedDetails } from "../data.seed";
 import { TdeiObjectFaker } from "../tdei-object-faker";
 
@@ -218,6 +218,18 @@ describe("Organization service", () => {
         //Assert
         expect(oraganizationResponse.status).toBe(200);
         expect(oraganizationResponse.data).toBeInstanceOf(Array);
+        oraganizationResponse.data.forEach(org => {
+          expect(org).toMatchObject(<OrganizationList>{
+
+            tdei_org_id: expect.any(String),
+            name: expect.any(String),
+            phone: expect.any(String),
+            url: expect.any(String),
+            address: expect.any(String),
+            polygon: expect.anything() as null | Polygon,
+            poc: expect.anything() as POC[]
+          })
+        })
       });
 
       it('When searched with tdei_org_id filter, Expect to return list of organizations matching filter', async () => {
@@ -232,7 +244,18 @@ describe("Organization service", () => {
         //Assert
         expect(oraganizationResponse.status).toBe(200);
         expect(Array.isArray(data)).toBe(true);
-        expect(data[0].tdei_org_id).toEqual(seederData?.organization?.tdei_org_id);
+        oraganizationResponse.data.forEach(org => {
+          expect(org).toMatchObject(<OrganizationList>{
+
+            tdei_org_id: seederData?.organization?.tdei_org_id,
+            name: expect.any(String),
+            phone: expect.any(String),
+            url: expect.any(String),
+            address: expect.any(String),
+            polygon: expect.anything() as null | Polygon,
+            poc: expect.anything() as POC[]
+          })
+        })
       });
 
       it('When searched with organization name filter, Expect to return list of organizations matching fiter', async () => {
@@ -240,15 +263,25 @@ describe("Organization service", () => {
         let oraganizationApi = new OrganizationApi(configurationWithAuthHeader);
 
         //Act
-        const oraganizationResponse = await oraganizationApi.getOrganization(seederData?.organization?.tdei_org_id, seederData?.organization?.org_name,
-          undefined, undefined, undefined, undefined);
+        const oraganizationResponse = await oraganizationApi.getOrganization(seederData?.organization?.tdei_org_id, seederData?.organization?.org_name);
 
         const data = oraganizationResponse.data;
 
         //Assert
         expect(oraganizationResponse.status).toBe(200);
         expect(Array.isArray(data)).toBe(true);
-        expect(data[0].tdei_org_id).toEqual(seederData?.organization?.tdei_org_id);
+        oraganizationResponse.data.forEach(org => {
+          expect(org).toMatchObject(<OrganizationList>{
+
+            tdei_org_id: seederData?.organization?.tdei_org_id,
+            name: seederData?.organization?.org_name,
+            phone: expect.any(String),
+            url: expect.any(String),
+            address: expect.any(String),
+            polygon: expect.anything() as null | Polygon,
+            poc: expect.anything() as POC[]
+          })
+        })
       });
 
       it('When searched with bbox name filter, Expect to return list of organizations matching fiter', async () => {
