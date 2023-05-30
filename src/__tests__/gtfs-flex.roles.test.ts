@@ -1,6 +1,6 @@
 import { Utility } from '../utils';
 import {
-    GTFSFlexServiceApi,
+    GTFSFlexServiceApi, Polygon, Service,
 } from 'tdei-management-client';
 import seed, { SeedDetails } from '../data.seed';
 import { TdeiObjectFaker } from '../tdei-object-faker';
@@ -67,7 +67,15 @@ describe('GTFS Flex service', () => {
                 const serviceResponse = await gtfsFlexApi.getService();
                 //Assert
                 expect(serviceResponse.status).toBe(200);
-                expect(serviceResponse.data).toBeInstanceOf(Array);
+               expect(serviceResponse.data).toBeInstanceOf(Array);
+                serviceResponse.data.forEach(service => {
+                    expect(service).toMatchObject(<Service>{
+                        tdei_org_id: expect.any(String),
+                        tdei_service_id: expect.any(String),
+                        service_name: expect.any(String),
+                        polygon: expect.anything() as null | Polygon
+                    })
+                })
             });
         })
     })
