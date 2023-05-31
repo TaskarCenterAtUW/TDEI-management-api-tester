@@ -65,11 +65,12 @@ describe('GTFS Pathways Service Role Testing - Data Generator User', () => {
                 expect(stationResponse.status).toBe(200);
                 expect(stationResponse.data).toBeInstanceOf(Array);
                 stationResponse.data.forEach(station => {
+                    expectPolygon(station.polygon);
                     expect(station).toMatchObject(<Station>{
                         tdei_station_id: expect.any(String),
                         tdei_org_id: expect.any(String),
                         station_name: expect.any(String),
-                        polygon: expect.anything() as null | Polygon
+                        polygon: expect.any(Object || null)
 
                     })
                 })
@@ -78,3 +79,11 @@ describe('GTFS Pathways Service Role Testing - Data Generator User', () => {
     });
 });
 
+function expectPolygon(polygon: any) {
+    if (polygon) {
+        let aPolygon = polygon as Polygon;
+        expect(typeof aPolygon.features).not.toBeNull();
+        expect(aPolygon.features?.length).toBeGreaterThan(0);
+  
+    }
+  }
