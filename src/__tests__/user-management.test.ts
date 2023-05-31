@@ -3,6 +3,7 @@ import { OrgRoles, Register, RoleDetails, Roles, User, UserManagementApi } from 
 import { faker } from '@faker-js/faker';
 import seed, { SeedDetails } from "../data.seed";
 import { TdeiObjectFaker } from "../tdei-object-faker";
+import exp from "constants";
 
 describe("User Management service", () => {
   let configurationWithAuthHeader = Utility.getConfiguration();
@@ -45,17 +46,13 @@ describe("User Management service", () => {
         //Act
         const rolesResponse = await userManagementApi.roles();
         //Assert
-        // expect(rolesResponse.data.data).toEqual(expect.arrayContaining(expect.objectContaining(
-        //   <Roles>{
-        //     description: expect.any(String),
-        //     name: expect.any(String)
-        //   }
-        // )));
         expect(Array.isArray(rolesResponse.data.data)).toBe(true);
-        expect(rolesResponse.data.data![0]).toMatchObject(<Roles>{
-          description: expect.any(String),
-          name: expect.any(String)
-        });
+        rolesResponse.data.data?.forEach(role => {
+          expect(role).toMatchObject(<Roles>{
+            description: expect.any(String),
+            name: expect.any(String)
+          })
+        })
       });
     });
   });

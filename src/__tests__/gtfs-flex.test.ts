@@ -2,6 +2,8 @@ import { Utility } from '../utils';
 import {
     GTFSFlexServiceApi,
     AuthApi,
+    Service,
+    Polygon,
 } from 'tdei-management-client';
 import seed, { SeedDetails } from '../data.seed';
 import { TdeiObjectFaker } from '../tdei-object-faker';
@@ -186,6 +188,14 @@ describe('GTFS Flex service', () => {
                 //Assert
                 expect(serviceResponse.status).toBe(200);
                 expect(serviceResponse.data).toBeInstanceOf(Array);
+                serviceResponse.data.forEach(service => {
+                    expect(service).toMatchObject(<Service>{
+                        tdei_org_id: expect.any(String),
+                        tdei_service_id: expect.any(String),
+                        service_name: expect.any(String),
+                        polygon: expect.anything() as null | Polygon
+                    })
+                })
             });
 
             it('When searched with tdei_org_id filter, Expect to return list of Services matching filter', async () => {
@@ -196,9 +206,16 @@ describe('GTFS Flex service', () => {
                 const data = serviceResponse.data;
                 //Assert
                 expect(serviceResponse.status).toBe(200);
-                expect(Array.isArray(data)).toBe(true);
                 expect(data).toBeInstanceOf(Array);
-                expect(data[0].tdei_org_id).toEqual(seederData?.organization?.tdei_org_id);
+            
+                serviceResponse.data.forEach(service => {
+                    expect(service).toMatchObject(<Service>{
+                        tdei_org_id: seederData?.organization?.tdei_org_id,
+                        tdei_service_id: expect.any(String),
+                        service_name: expect.any(String),
+                        polygon: expect.anything() as null | Polygon
+                    })
+                })
             });
 
             it('When searched with service name filter, Expect to return list of Services matching filter', async () => {
@@ -210,7 +227,14 @@ describe('GTFS Flex service', () => {
                 //Assert
                 expect(serviceResponse.status).toBe(200);
                 expect(data).toBeInstanceOf(Array);
-                expect(data[0].service_name).toEqual(seederData?.service?.service_name);
+                serviceResponse.data.forEach(service => {
+                    expect(service).toMatchObject(<Service>{
+                        tdei_org_id: expect.any(String),
+                        tdei_service_id: expect.any(String),
+                        service_name: seederData?.service?.service_name,
+                        polygon: expect.anything() as null | Polygon
+                    })
+                })
             });
 
             it('When searched with tdei_service_id filter, Expect to return list of Services matching filter', async () => {
@@ -223,7 +247,14 @@ describe('GTFS Flex service', () => {
                 //Assert
                 expect(serviceResponse.status).toBe(200);
                 expect(data).toBeInstanceOf(Array);
-                expect(data[0].tdei_service_id).toEqual(tdei_service_id);
+                serviceResponse.data.forEach(service => {
+                    expect(service).toMatchObject(<Service>{
+                        tdei_org_id: expect.any(String),
+                        tdei_service_id: seederData?.service?.tdei_service_id,
+                        service_name: expect.any(String),
+                        polygon: expect.anything() as null | Polygon
+                    })
+                })
             });
 
             it('When searched with bbox name filter, Expect to return list of Services matching filter', async () => {

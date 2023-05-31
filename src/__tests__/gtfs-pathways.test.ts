@@ -2,6 +2,8 @@ import { Utility } from '../utils';
 import {
     GTFSPathwaysStationApi,
     AuthApi,
+    Polygon,
+    Station,
 } from 'tdei-management-client';
 import seed, { SeedDetails } from '../data.seed';
 import { TdeiObjectFaker } from '../tdei-object-faker';
@@ -172,6 +174,14 @@ describe('GTFS Pathways service', () => {
 
                 expect(stationResponse.status).toBe(200);
                 expect(stationResponse.data).toBeInstanceOf(Array);
+                stationResponse.data.forEach(station => {
+                    expect(station).toMatchObject(<Station>{
+                        tdei_station_id: expect.any(String),
+                        tdei_org_id: expect.any(String),
+                        station_name: expect.any(String),
+                        polygon: expect.anything() as null | Polygon
+                    })
+                })
             });
 
             it('When searched with tdei_org_id filter, Expect to return list of Stations matching filter', async () => {
@@ -184,7 +194,14 @@ describe('GTFS Pathways service', () => {
                 expect(stationResponse.status).toBe(200);
                 expect(Array.isArray(data)).toBe(true);
                 expect(data).toBeInstanceOf(Array);
-                expect(data[0].tdei_org_id).toEqual(seederData?.organization?.tdei_org_id);
+                stationResponse.data.forEach(station => {
+                    expect(station).toMatchObject(<Station>{
+                        tdei_station_id: expect.any(String),
+                        tdei_org_id: seederData?.organization?.tdei_org_id,
+                        station_name: expect.any(String),
+                        polygon: expect.anything() as null | Polygon
+                    })
+                })
             });
 
             it('When searched with station name filter, Expect to return list of Stations matching filter', async () => {
@@ -195,7 +212,14 @@ describe('GTFS Pathways service', () => {
 
                 expect(stationResponse.status).toBe(200);
                 expect(data).toBeInstanceOf(Array);
-                expect(data[0].station_name).toEqual(seederData?.station?.station_name);
+                stationResponse.data.forEach(station => {
+                    expect(station).toMatchObject(<Station>{
+                        tdei_station_id: expect.any(String),
+                        tdei_org_id: expect.any(String),
+                        station_name: seederData?.station?.station_name,
+                        polygon: expect.anything() as null | Polygon
+                    })
+                })
             });
 
             it('When searched with tdei_station_id filter, Expect to return list of Stations matching filter', async () => {
@@ -207,7 +231,14 @@ describe('GTFS Pathways service', () => {
 
                 expect(stationResponse.status).toBe(200);
                 expect(data).toBeInstanceOf(Array);
-                expect(data[0].tdei_station_id).toEqual(tdei_station_id);
+                stationResponse.data.forEach(station => {
+                    expect(station).toMatchObject(<Station>{
+                        tdei_station_id: seederData?.station?.tdei_station_id,
+                        tdei_org_id: expect.any(String),
+                        station_name: expect.any(String),
+                        polygon: expect.anything() as null | Polygon
+                    })
+                })
             });
 
             it('When searched with bbox name filter, Expect to return list of Stations matching filter', async () => {
