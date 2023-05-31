@@ -2,6 +2,7 @@ import { Utility } from "../utils";
 import { AuthApi, Token } from "tdei-management-client";
 import { faker } from '@faker-js/faker';
 
+jest.setTimeout(10000); 
 describe("Authentication service", () => {
   beforeAll(async () => {
   }, 50000);

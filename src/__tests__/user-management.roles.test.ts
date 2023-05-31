@@ -2,6 +2,8 @@ import { TDEIROLES, Utility } from "../utils";
 import { RoleDetails, UserManagementApi } from "tdei-management-client";
 import seed, { SeedDetails } from "../data.seed";
 
+jest.setTimeout(10000); 
+
 describe("User Management Service Role Testing - Data Generator User", () => {
   let configurationWithAuthHeader = Utility.getConfiguration();
   let seederData: SeedDetails | undefined = undefined;

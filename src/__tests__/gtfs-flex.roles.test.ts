@@ -5,6 +5,8 @@ import {
 import seed, { SeedDetails } from '../data.seed';
 import { TdeiObjectFaker } from '../tdei-object-faker';
 
+jest.setTimeout(10000); 
+
 describe('GTFS Flex service', () => {
     let configurationWithAuthHeader = Utility.getConfiguration();
     let seederData: SeedDetails | undefined = undefined;

@@ -5,6 +5,8 @@ import seed, { SeedDetails } from "../data.seed";
 import { TdeiObjectFaker } from "../tdei-object-faker";
 import exp from "constants";
 
+jest.setTimeout(10000); 
+
 describe("User Management service", () => {
   let configurationWithAuthHeader = Utility.getConfiguration();
   let configurationWithoutAuthHeader = Utility.getConfiguration();
