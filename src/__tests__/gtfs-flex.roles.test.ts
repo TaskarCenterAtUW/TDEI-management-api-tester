@@ -69,11 +69,12 @@ describe('GTFS Flex service', () => {
                 expect(serviceResponse.status).toBe(200);
                expect(serviceResponse.data).toBeInstanceOf(Array);
                 serviceResponse.data.forEach(service => {
+                    expectPolygon(service.polygon);
                     expect(service).toMatchObject(<Service>{
                         tdei_org_id: expect.any(String),
                         tdei_service_id: expect.any(String),
                         service_name: expect.any(String),
-                        polygon: expect.anything() as null | Polygon
+                        polygon: expect.any(Object || null)
                     })
                 })
             });
@@ -81,3 +82,11 @@ describe('GTFS Flex service', () => {
     })
 });
 
+function expectPolygon(polygon: any) {
+  if (polygon) {
+      let aPolygon = polygon as Polygon;
+      expect(typeof aPolygon.features).not.toBeNull();
+      expect(aPolygon.features?.length).toBeGreaterThan(0);
+
+  }
+}

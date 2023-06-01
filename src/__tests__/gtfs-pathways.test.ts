@@ -175,11 +175,12 @@ describe('GTFS Pathways service', () => {
                 expect(stationResponse.status).toBe(200);
                 expect(stationResponse.data).toBeInstanceOf(Array);
                 stationResponse.data.forEach(station => {
+                    expectPolygon(station.polygon);
                     expect(station).toMatchObject(<Station>{
                         tdei_station_id: expect.any(String),
                         tdei_org_id: expect.any(String),
                         station_name: expect.any(String),
-                        polygon: expect.anything() as null | Polygon
+                        polygon: expect.any(Object || null)
                     })
                 })
             });
@@ -195,11 +196,12 @@ describe('GTFS Pathways service', () => {
                 expect(Array.isArray(data)).toBe(true);
                 expect(data).toBeInstanceOf(Array);
                 stationResponse.data.forEach(station => {
+                    expectPolygon(station.polygon);
                     expect(station).toMatchObject(<Station>{
                         tdei_station_id: expect.any(String),
                         tdei_org_id: seederData?.organization?.tdei_org_id,
                         station_name: expect.any(String),
-                        polygon: expect.anything() as null | Polygon
+                        polygon: expect.any(Object || null)
                     })
                 })
             });
@@ -213,11 +215,12 @@ describe('GTFS Pathways service', () => {
                 expect(stationResponse.status).toBe(200);
                 expect(data).toBeInstanceOf(Array);
                 stationResponse.data.forEach(station => {
+                    expectPolygon(station.polygon);
                     expect(station).toMatchObject(<Station>{
                         tdei_station_id: expect.any(String),
                         tdei_org_id: expect.any(String),
                         station_name: seederData?.station?.station_name,
-                        polygon: expect.anything() as null | Polygon
+                        polygon: expect.any(Object || null)
                     })
                 })
             });
@@ -232,11 +235,12 @@ describe('GTFS Pathways service', () => {
                 expect(stationResponse.status).toBe(200);
                 expect(data).toBeInstanceOf(Array);
                 stationResponse.data.forEach(station => {
+                    expectPolygon(station.polygon);
                     expect(station).toMatchObject(<Station>{
                         tdei_station_id: seederData?.station?.tdei_station_id,
                         tdei_org_id: expect.any(String),
                         station_name: expect.any(String),
-                        polygon: expect.anything() as null | Polygon
+                        polygon: expect.any(Object || null)
                     })
                 })
             });
@@ -274,3 +278,11 @@ describe('GTFS Pathways service', () => {
     })
 });
 
+function expectPolygon(polygon: any) {
+    if (polygon) {
+        let aPolygon = polygon as Polygon;
+        expect(typeof aPolygon.features).not.toBeNull();
+        expect(aPolygon.features?.length).toBeGreaterThan(0);
+  
+    }
+  }

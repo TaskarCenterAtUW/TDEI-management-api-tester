@@ -219,14 +219,14 @@ describe("Organization service", () => {
         expect(oraganizationResponse.status).toBe(200);
         expect(oraganizationResponse.data).toBeInstanceOf(Array);
         oraganizationResponse.data.forEach(org => {
+          expectPolygon(org.polygon);
           expect(org).toMatchObject(<OrganizationList>{
-
             tdei_org_id: expect.any(String),
             name: expect.any(String),
             phone: expect.any(String),
             url: expect.any(String),
             address: expect.any(String),
-            polygon: expect.anything() as null | Polygon,
+            polygon: expect.any(Object || null),
             poc: expect.anything() as POC[]
           })
         })
@@ -245,14 +245,14 @@ describe("Organization service", () => {
         expect(oraganizationResponse.status).toBe(200);
         expect(Array.isArray(data)).toBe(true);
         oraganizationResponse.data.forEach(org => {
+          expectPolygon(org.polygon);
           expect(org).toMatchObject(<OrganizationList>{
-
             tdei_org_id: seederData?.organization?.tdei_org_id,
             name: expect.any(String),
             phone: expect.any(String),
             url: expect.any(String),
             address: expect.any(String),
-            polygon: expect.anything() as null | Polygon,
+            polygon: expect.any(Object || null),
             poc: expect.anything() as POC[]
           })
         })
@@ -271,14 +271,14 @@ describe("Organization service", () => {
         expect(oraganizationResponse.status).toBe(200);
         expect(Array.isArray(data)).toBe(true);
         oraganizationResponse.data.forEach(org => {
+          expectPolygon(org.polygon);
           expect(org).toMatchObject(<OrganizationList>{
-
             tdei_org_id: seederData?.organization?.tdei_org_id,
             name: seederData?.organization?.org_name,
             phone: expect.any(String),
             url: expect.any(String),
             address: expect.any(String),
-            polygon: expect.anything() as null | Polygon,
+            polygon: expect.any(Object || null),
             poc: expect.anything() as POC[]
           })
         })
@@ -328,7 +328,14 @@ describe("Organization service", () => {
   });
 });
 
+function expectPolygon(polygon: any) {
+  if (polygon) {
+      let aPolygon = polygon as Polygon;
+      expect(typeof aPolygon.features).not.toBeNull();
+      expect(aPolygon.features?.length).toBeGreaterThan(0);
 
+  }
+}
 
 
 
