@@ -21,7 +21,7 @@ describe('GTFS Pathways Service Role Testing - Data Generator User', () => {
             it('When creating new station, Expect to return HTTP Status 403', async () => {
                 const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithAuthHeader);
 
-                const stationRequest = gtfsPathwaysApi.createStation(TdeiObjectFaker.getStation(seederData?.organization?.tdei_org_id));
+                const stationRequest = gtfsPathwaysApi.createStation(TdeiObjectFaker.getStation(seederData?.projectGroup?.tdei_project_group_id));
 
                 await expect(stationRequest).rejects.toMatchObject({ response: { status: 403 } });
             });
@@ -35,7 +35,7 @@ describe('GTFS Pathways Service Role Testing - Data Generator User', () => {
                 const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithAuthHeader);
                 let payload = seederData?.updateStationObject!;
 
-                const stationRequest = gtfsPathwaysApi.updateStation(payload, <string>seederData?.organization?.tdei_org_id);
+                const stationRequest = gtfsPathwaysApi.updateStation(payload, <string>seederData?.projectGroup?.tdei_project_group_id);
 
                 await expect(stationRequest).rejects.toMatchObject({ response: { status: 403 } });
             });
@@ -48,7 +48,7 @@ describe('GTFS Pathways Service Role Testing - Data Generator User', () => {
             it('When deleting station id, Expect to return HTTP Status 403', async () => {
                 const gtfsPathwaysApi = new GTFSPathwaysStationApi(configurationWithAuthHeader);
 
-                const stationRequest = gtfsPathwaysApi.setServiceStatus(seederData?.organization?.tdei_org_id!, <string>seederData?.station?.tdei_station_id!, true);
+                const stationRequest = gtfsPathwaysApi.setServiceStatus(seederData?.projectGroup?.tdei_project_group_id!, <string>seederData?.station?.tdei_station_id!, true);
 
                 await expect(stationRequest).rejects.toMatchObject({ response: { status: 403 } });
             });
@@ -68,7 +68,7 @@ describe('GTFS Pathways Service Role Testing - Data Generator User', () => {
                     expectPolygon(station.polygon);
                     expect(station).toMatchObject(<Station>{
                         tdei_station_id: expect.any(String),
-                        tdei_org_id: expect.any(String),
+                        tdei_project_group_id: expect.any(String),
                         station_name: expect.any(String),
                         polygon: expect.any(Object || null)
 
@@ -84,6 +84,6 @@ function expectPolygon(polygon: any) {
         let aPolygon = polygon as Polygon;
         expect(typeof aPolygon.features).not.toBeNull();
         expect(aPolygon.features?.length).toBeGreaterThan(0);
-  
+
     }
-  }
+}

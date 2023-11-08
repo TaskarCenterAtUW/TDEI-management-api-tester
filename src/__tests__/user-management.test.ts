@@ -1,5 +1,5 @@
 import { TDEIROLES, Utility } from "../utils";
-import { OrgRoles, Register, RoleDetails, Roles, User, UserManagementApi } from "tdei-management-client";
+import { ProjectGroupRoles, Register, RoleDetails, Roles, User, UserManagementApi } from "tdei-management-client";
 import { faker } from '@faker-js/faker';
 import seed, { SeedDetails } from "../data.seed";
 import { TdeiObjectFaker } from "../tdei-object-faker";
@@ -131,7 +131,7 @@ describe("User Management service", () => {
         const assignPermission = userManagementApi.permission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organization?.tdei_org_id,
+            tdei_project_group_id: seederData?.projectGroup?.tdei_project_group_id,
             user_name: seederData?.producer_user?.email
           })
         //Assert
@@ -146,7 +146,7 @@ describe("User Management service", () => {
         const assignPermission = userManagementApi.permission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organization?.tdei_org_id,
+            tdei_project_group_id: seederData?.projectGroup?.tdei_project_group_id,
             user_name: faker.internet.email() //not registered email
           })
         //Assert
@@ -160,7 +160,7 @@ describe("User Management service", () => {
         const assignPermission = userManagementApi.permission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organization?.tdei_org_id,
+            tdei_project_group_id: seederData?.projectGroup?.tdei_project_group_id,
             user_name: configurationWithAuthHeader.username //logged in user account
           })
         //Assert
@@ -176,7 +176,7 @@ describe("User Management service", () => {
         const response = await userManagementApi.permission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organization?.tdei_org_id,
+            tdei_project_group_id: seederData?.projectGroup?.tdei_project_group_id,
             user_name: seederData?.producer_user!.email
           });
 
@@ -187,21 +187,21 @@ describe("User Management service", () => {
     });
   });
 
-  describe("User org Roles", () => {
+  describe("User Project Group Roles", () => {
 
     describe("Auth", () => {
       it("When no auth token provided, Expect to return HTTP status 401", async () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
         //Act
-        const orgRoles = userManagementApi.orgRoles(seederData?.producer_user?.email!);
+        const projectGroupRoles = userManagementApi.projectGroupRoles(seederData?.producer_user?.email!);
         //Assert
-        await expect(orgRoles).rejects.toMatchObject({ response: { status: 401 } });;
+        await expect(projectGroupRoles).rejects.toMatchObject({ response: { status: 401 } });;
       });
     });
 
     describe("Functional", () => {
-      it("When fetching logged in user org roles, Expect to return user org roles of type OrgRoles", async () => {
+      it("When fetching logged in user project group roles, Expect to return user project group roles of type ProjectGroupRoles", async () => {
         //Arrange
         let configuration = Utility.getConfiguration();
         const loginResponse = await Utility.login(seederData?.producer_user?.email!, "Tester01*");
@@ -210,12 +210,12 @@ describe("User Management service", () => {
         };
         let userManagementApi = new UserManagementApi(configuration);
         //Act
-        const response = await userManagementApi.orgRoles(seederData?.producer_user?.id!);
+        const response = await userManagementApi.projectGroupRoles(seederData?.producer_user?.id!);
         //Assert
         expect(Array.isArray(response.data)).toBe(true);
-        expect(response.data![0]).toMatchObject(<OrgRoles>{
-          tdei_org_id: expect.any(String),
-          org_name: expect.any(String),
+        expect(response.data![0]).toMatchObject(<ProjectGroupRoles>{
+          tdei_project_group_id: expect.any(String),
+          project_group_name: expect.any(String),
           roles: expect.any(Array<string>)
         });
       });
@@ -232,7 +232,7 @@ describe("User Management service", () => {
         const assignPermission = userManagementApi.revokePermission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organization?.tdei_org_id,
+            tdei_project_group_id: seederData?.projectGroup?.tdei_project_group_id,
             user_name: seederData?.producer_user?.email
           })
 
@@ -248,7 +248,7 @@ describe("User Management service", () => {
         const assignPermission = userManagementApi.revokePermission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organization?.tdei_org_id,
+            tdei_project_group_id: seederData?.projectGroup?.tdei_project_group_id,
             user_name: faker.internet.email() //not registered email
           })
 
@@ -263,7 +263,7 @@ describe("User Management service", () => {
         const assignPermission = userManagementApi.revokePermission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organization?.tdei_org_id,
+            tdei_project_group_id: seederData?.projectGroup?.tdei_project_group_id,
             user_name: configurationWithAuthHeader.username //logged in user account
           })
 
@@ -280,7 +280,7 @@ describe("User Management service", () => {
         const response = await userManagementApi.revokePermission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organization?.tdei_org_id,
+            tdei_project_group_id: seederData?.projectGroup?.tdei_project_group_id,
             user_name: seederData?.producer_user?.email
           });
 

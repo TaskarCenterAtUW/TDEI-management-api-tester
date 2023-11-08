@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "axios": "1.3.5",
-    "tdei-management-client": "git+https://github.com/TaskarCenterAtUW/TDEI-management-api-client.git",
+    "tdei-management-client": "git+https://github.com/TaskarCenterAtUW/TDEI-management-api-client.git#a3c0a1ef7e4d9da4c4409f0b011d348750e8410c",
     "typescript": "5.0.4"
   }
 }

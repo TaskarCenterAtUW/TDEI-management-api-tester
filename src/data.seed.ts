@@ -1,6 +1,6 @@
 import { existsSync } from "fs";
 import { readFile, writeFile } from "fs/promises";
-import { AuthApi, GTFSFlexServiceApi, GTFSPathwaysStationApi, Organization, OrganizationApi, RoleDetails, Service, ServiceUpdate, Station, StationUpdate, User, UserManagementApi } from "tdei-management-client";
+import { AuthApi, GTFSFlexServiceApi, GTFSPathwaysStationApi, ProjectGroup, ProjectGroupApi, RoleDetails, Service, ServiceUpdate, Station, StationUpdate, User, UserManagementApi } from "tdei-management-client";
 import { TdeiObjectFaker } from "./tdei-object-faker";
 import { TDEIROLES, Utility } from "./utils";
 
@@ -15,7 +15,7 @@ export interface StationInterface {
 }
 
 export class SeedDetails {
-    organization: Organization | undefined;
+    projectGroup: ProjectGroup | undefined;
     producer_user: User | undefined;
     poc_user: User | undefined;
     station: Station | undefined;
@@ -81,14 +81,14 @@ class SeedData {
         } else {
             try {
                 console.log("Generating seed data");
-                this.data.organization = await this.createOrganization();
-                this.data.service = await this.createService(this.data.organization.tdei_org_id!);
-                this.data.station = await this.createStation(this.data.organization.tdei_org_id!);
+                this.data.projectGroup = await this.createProjectGroup();
+                this.data.service = await this.createService(this.data.projectGroup!.tdei_project_group_id!);
+                this.data.station = await this.createStation(this.data.projectGroup!.tdei_project_group_id!);
                 this.data.producer_user = await this.createUser();
                 this.data.poc_user = await this.createUser();
-                await this.assignOrgRoleToUser(this.data.producer_user.email!, this.data.organization.tdei_org_id!,
+                await this.assignProjectGroupRoleToUser(this.data.producer_user.email!, this.data.projectGroup!.tdei_project_group_id!,
                     [TDEIROLES.FLEX_DATA_GENERATOR, TDEIROLES.OSW_DATA_GENERATOR, TDEIROLES.PATHWAYS_DATA_GENERATOR]);
-                await this.assignOrgRoleToUser(this.data.poc_user.email!, this.data.organization.tdei_org_id!, [TDEIROLES.POC]);
+                await this.assignProjectGroupRoleToUser(this.data.poc_user.email!, this.data.projectGroup!.tdei_project_group_id!, [TDEIROLES.POC]);
 
                 await this.writeFile();
                 return this.data;
@@ -103,12 +103,12 @@ class SeedData {
         await writeFile('./seed.data.json', JSON.stringify(this.data), 'utf8');
     }
 
-    private async createOrganization(): Promise<Organization> {
-        console.log("Creating org");
-        let orgApi = new OrganizationApi(this.configurationWithAuthHeader);
-        const payload = TdeiObjectFaker.getOrganization();
-        const response = await orgApi.createOrganization(payload);
-        payload.tdei_org_id = response.data.data!;
+    private async createProjectGroup(): Promise<ProjectGroup> {
+        console.log("Creating Project Group");
+        let projectGroupApi = new ProjectGroupApi(this.configurationWithAuthHeader);
+        const payload = TdeiObjectFaker.getProjectGroup();
+        const response = await projectGroupApi.createProjectGroup(payload);
+        payload.tdei_project_group_id = response.data.data!;
         return payload;
     }
 
@@ -119,33 +119,33 @@ class SeedData {
         return response.data.data!;
     }
 
-    private async createStation(orgId: string): Promise<Station> {
+    private async createStation(tdei_project_group_id: string): Promise<Station> {
         console.log("Creating station");
         let stationApi = new GTFSPathwaysStationApi(this.configurationWithAuthHeader);
-        const payload = TdeiObjectFaker.getStation(orgId)
+        const payload = TdeiObjectFaker.getStation(tdei_project_group_id)
         const response = await stationApi.createStation(payload);
 
         payload.tdei_station_id = response.data.data!;
         return payload;
     }
 
-    private async createService(orgId: string): Promise<Service> {
+    private async createService(tdei_project_group_id: string): Promise<Service> {
         console.log("Creating service");
         let userManagementApi = new GTFSFlexServiceApi(this.configurationWithAuthHeader);
-        const payload = TdeiObjectFaker.getService(orgId)
+        const payload = TdeiObjectFaker.getService(tdei_project_group_id)
         const response = await userManagementApi.createService(payload);
 
         payload.tdei_service_id = response.data.data!;
         return payload;
     }
 
-    private async assignOrgRoleToUser(username: string, orgId: string, roles: TDEIROLES[]): Promise<boolean> {
-        console.log("Assigning user org role");
+    private async assignProjectGroupRoleToUser(username: string, tdei_project_group_id: string, roles: TDEIROLES[]): Promise<boolean> {
+        console.log("Assigning user AUTH_HOST= role");
         let userManagementApi = new UserManagementApi(this.configurationWithAuthHeader);
         let response = await userManagementApi.permission(<RoleDetails>
             {
                 roles: roles,
-                tdei_org_id: orgId,
+                tdei_project_group_id: tdei_project_group_id,
                 user_name: username
             })
         return true;

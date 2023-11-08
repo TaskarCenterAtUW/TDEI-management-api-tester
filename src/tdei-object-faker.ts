@@ -1,18 +1,18 @@
 import { faker } from "@faker-js/faker";
-import { GeoJSONFeatureTypeEnum, GeoJSONPolygonTypeEnum, Organization, Polygon, PolygonTypeEnum, Register, Service, Station, StationUpdate } from "tdei-management-client";
+import { GeoJSONFeatureTypeEnum, GeoJSONPolygonTypeEnum, ProjectGroup, Polygon, PolygonTypeEnum, Register, Service, Station, StationUpdate } from "tdei-management-client";
 
 export class TdeiObjectFaker {
-    static getService(orgId: string): Service {
+    static getService(projectGroupId: string): Service {
         return <Service>{
             service_name: faker.name.firstName() + "_Service",
-            tdei_org_id: orgId,
+            tdei_project_group_id: projectGroupId,
             polygon: this.getPolygon()
         };
     }
-    static getStation(orgId: string | undefined): Station {
+    static getStation(projectGroupId: string | undefined): Station {
         return <Station>{
             station_name: faker.name.firstName() + "_Station",
-            tdei_org_id: orgId,
+            tdei_project_group_id: projectGroupId,
             polygon: this.getPolygon()
         };
     }
@@ -27,9 +27,9 @@ export class TdeiObjectFaker {
         };
     }
 
-    static getOrganization() {
-        return <Organization>{
-            org_name: faker.company.name(),
+    static getProjectGroup() {
+        return <ProjectGroup>{
+            project_group_name: faker.company.name(),
             phone: faker.phone.number('###-###-####'),
             url: faker.internet.url(),
             address: `${faker.address.streetAddress()}, ${faker.address.stateAbbr()}, ${faker.address.country()}`,
