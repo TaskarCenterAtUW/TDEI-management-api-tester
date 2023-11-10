@@ -23,7 +23,7 @@ describe('GTFS Flex service', () => {
                 //Arrange
                 const gtfsFlexApi = new GTFSFlexServiceApi(configurationWithAuthHeader);
                 //Act
-                const serviceRequest = gtfsFlexApi.createService(TdeiObjectFaker.getService(<string>seederData?.organization?.tdei_org_id));
+                const serviceRequest = gtfsFlexApi.createService(TdeiObjectFaker.getService(<string>seederData?.projectGroup?.tdei_project_group_id));
                 //Assert
                 await expect(serviceRequest).rejects.toMatchObject({ response: { status: 403 } });
             });
@@ -38,7 +38,7 @@ describe('GTFS Flex service', () => {
                 const gtfsFlexApi = new GTFSFlexServiceApi(configurationWithAuthHeader);
                 let payload = seederData?.updateServiceObject!;
                 //Act
-                const serviceRequest = gtfsFlexApi.updateService(payload, <string>seederData?.organization?.tdei_org_id);
+                const serviceRequest = gtfsFlexApi.updateService(payload, <string>seederData?.projectGroup?.tdei_project_group_id);
                 //Assert
                 await expect(serviceRequest).rejects.toMatchObject({ response: { status: 403 } });
             });
@@ -51,7 +51,7 @@ describe('GTFS Flex service', () => {
                 //Arrange
                 const gtfsFlexApi = new GTFSFlexServiceApi(configurationWithAuthHeader);
                 //Act
-                const serviceRequest = gtfsFlexApi.deleteService(seederData?.organization?.tdei_org_id!, <string>seederData?.service?.tdei_service_id!, true);
+                const serviceRequest = gtfsFlexApi.deleteService(seederData?.projectGroup?.tdei_project_group_id!, <string>seederData?.service?.tdei_service_id!, true);
                 //Assert
                 await expect(serviceRequest).rejects.toMatchObject({ response: { status: 403 } });
             });
@@ -67,11 +67,11 @@ describe('GTFS Flex service', () => {
                 const serviceResponse = await gtfsFlexApi.getService();
                 //Assert
                 expect(serviceResponse.status).toBe(200);
-               expect(serviceResponse.data).toBeInstanceOf(Array);
+                expect(serviceResponse.data).toBeInstanceOf(Array);
                 serviceResponse.data.forEach(service => {
                     expectPolygon(service.polygon);
                     expect(service).toMatchObject(<Service>{
-                        tdei_org_id: expect.any(String),
+                        tdei_project_group_id: expect.any(String),
                         tdei_service_id: expect.any(String),
                         service_name: expect.any(String),
                         polygon: expect.any(Object || null)
@@ -83,10 +83,10 @@ describe('GTFS Flex service', () => {
 });
 
 function expectPolygon(polygon: any) {
-  if (polygon) {
-      let aPolygon = polygon as Polygon;
-      expect(typeof aPolygon.features).not.toBeNull();
-      expect(aPolygon.features?.length).toBeGreaterThan(0);
+    if (polygon) {
+        let aPolygon = polygon as Polygon;
+        expect(typeof aPolygon.features).not.toBeNull();
+        expect(aPolygon.features?.length).toBeGreaterThan(0);
 
-  }
+    }
 }

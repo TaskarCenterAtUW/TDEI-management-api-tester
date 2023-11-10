@@ -35,7 +35,7 @@ describe("User Management Service Role Testing - Data Generator User", () => {
         const permissionRequest = userManagementApi.permission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organization?.tdei_org_id,
+            tdei_project_group_id: seederData?.projectGroup?.tdei_project_group_id,
             user_name: seederData?.producer_user!.email
           });
 
@@ -55,7 +55,7 @@ describe("User Management Service Role Testing - Data Generator User", () => {
         const permissionRequest = userManagementApi.revokePermission(<RoleDetails>
           {
             roles: [TDEIROLES.FLEX_DATA_GENERATOR],
-            tdei_org_id: seederData?.organization?.tdei_org_id,
+            tdei_project_group_id: seederData?.projectGroup?.tdei_project_group_id,
             user_name: seederData?.producer_user?.email
           });
 
