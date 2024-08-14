@@ -1,6 +1,6 @@
 import { existsSync } from "fs";
 import { readFile, writeFile } from "fs/promises";
-import { AuthApi, GTFSFlexServiceApi, GTFSPathwaysStationApi, ProjectGroup, ProjectGroupApi, RoleDetails, Service, ServiceUpdate, Station, StationUpdate, User, UserManagementApi } from "tdei-management-client";
+import { AuthApi, ServiceApi, ProjectGroup, ProjectGroupApi, RoleDetails, Service, ServiceUpdate, User, UserManagementApi } from "tdei-management-client";
 import { TdeiObjectFaker } from "./tdei-object-faker";
 import { TDEIROLES, Utility } from "./utils";
 
@@ -18,37 +18,36 @@ export class SeedDetails {
     projectGroup: ProjectGroup | undefined;
     producer_user: User | undefined;
     poc_user: User | undefined;
-    station: Station | undefined;
-    service: Service | undefined;
+    services: Service[] | undefined;
 
     constructor(init?: Partial<SeedDetails>) {
         Object.assign(this, init);
     }
 
-    get updateStationObject() {
-        return <StationUpdate>{
-            station_name: this.station?.station_name,
-            tdei_station_id: this.station?.tdei_station_id,
-            polygon: this.station?.polygon,
+    updateServiceObject(type: string): ServiceUpdate {
+        let tdei_service = this.services?.find(x => x.service_type == type);
+        return <ServiceUpdate>{
+            service_name: tdei_service?.service_name,
+            tdei_service_id: tdei_service?.tdei_service_id,
+            polygon: tdei_service?.polygon,
         }
     }
 
-    get updateServiceObject() {
-        return <ServiceUpdate>{
-            service_name: this.service?.service_name,
-            tdei_service_id: this.service?.tdei_service_id,
-            polygon: this.service?.polygon,
-        }
+    getService(type: string): Service {
+        let tdei_service = this.services?.find(x => x.service_type == type);
+        return tdei_service!;
     }
 }
 
 class SeedData {
     private configurationWithAuthHeader = Utility.getConfiguration();
     private configurationWithoutAuthHeader = Utility.getConfiguration();
+    private readonly data_types: Array<string>;
 
     private data: SeedDetails = new SeedDetails();
 
     constructor() {
+        this.data_types = ['osw', 'flex', 'pathways']
     }
 
     private async setAuthentication() {
@@ -82,8 +81,7 @@ class SeedData {
             try {
                 console.log("Generating seed data");
                 this.data.projectGroup = await this.createProjectGroup();
-                this.data.service = await this.createService(this.data.projectGroup!.tdei_project_group_id!);
-                this.data.station = await this.createStation(this.data.projectGroup!.tdei_project_group_id!);
+                this.data.services = await this.createService(this.data.projectGroup!.tdei_project_group_id!);
                 this.data.producer_user = await this.createUser();
                 this.data.poc_user = await this.createUser();
                 await this.assignProjectGroupRoleToUser(this.data.producer_user.email!, this.data.projectGroup!.tdei_project_group_id!,
@@ -119,24 +117,21 @@ class SeedData {
         return response.data.data!;
     }
 
-    private async createStation(tdei_project_group_id: string): Promise<Station> {
-        console.log("Creating station");
-        let stationApi = new GTFSPathwaysStationApi(this.configurationWithAuthHeader);
-        const payload = TdeiObjectFaker.getStation(tdei_project_group_id)
-        const response = await stationApi.createStation(payload);
-
-        payload.tdei_station_id = response.data.data!;
-        return payload;
-    }
-
-    private async createService(tdei_project_group_id: string): Promise<Service> {
+    private async createService(tdei_project_group_id: string): Promise<Service[]> {
         console.log("Creating service");
-        let userManagementApi = new GTFSFlexServiceApi(this.configurationWithAuthHeader);
-        const payload = TdeiObjectFaker.getService(tdei_project_group_id)
-        const response = await userManagementApi.createService(payload);
+        let list: Service[] = [] as any;
+        let userManagementApi = new ServiceApi(this.configurationWithAuthHeader);
 
-        payload.tdei_service_id = response.data.data!;
-        return payload;
+        for await (const data_type of this.data_types) {
+            const payload = TdeiObjectFaker.getService(tdei_project_group_id, data_type);
+
+            const response = await userManagementApi.createService(payload);
+
+            payload.tdei_service_id = response.data.data!;
+            list.push(payload);
+
+        }
+        return list;
     }
 
     private async assignProjectGroupRoleToUser(username: string, tdei_project_group_id: string, roles: TDEIROLES[]): Promise<boolean> {
@@ -153,5 +148,6 @@ class SeedData {
 }
 
 const seed = new SeedData();
+
 export default seed;
 

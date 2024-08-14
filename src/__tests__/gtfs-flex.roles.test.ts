@@ -1,6 +1,6 @@
 import { Utility } from '../utils';
 import {
-    GTFSFlexServiceApi, Polygon, Service,
+    ServiceApi, Polygon, Service,
 } from 'tdei-management-client';
 import seed, { SeedDetails } from '../data.seed';
 import { TdeiObjectFaker } from '../tdei-object-faker';
@@ -19,11 +19,11 @@ describe('GTFS Flex service', () => {
 
     describe('Create Service', () => {
         describe('Functional', () => {
-            it('When creating new service, Expect to return HTTP Status 403', async () => {
+            it('As a POC, When creating new service, Expect to return forbidden request', async () => {
                 //Arrange
-                const gtfsFlexApi = new GTFSFlexServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
                 //Act
-                const serviceRequest = gtfsFlexApi.createService(TdeiObjectFaker.getService(<string>seederData?.projectGroup?.tdei_project_group_id));
+                const serviceRequest = gtfsFlexApi.createService(TdeiObjectFaker.getService(<string>seederData?.projectGroup?.tdei_project_group_id, 'flex'));
                 //Assert
                 await expect(serviceRequest).rejects.toMatchObject({ response: { status: 403 } });
             });
@@ -33,12 +33,12 @@ describe('GTFS Flex service', () => {
     describe('Update Service', () => {
 
         describe('Functional', () => {
-            it('When updating new service, Expect to return HTTP Status 403', async () => {
+            it('As a POC, When updating new service, Expect to return forbidden request', async () => {
                 //Arrange
-                const gtfsFlexApi = new GTFSFlexServiceApi(configurationWithAuthHeader);
-                let payload = seederData?.updateServiceObject!;
+                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
+                let payload = seederData?.updateServiceObject('flex');
                 //Act
-                const serviceRequest = gtfsFlexApi.updateService(payload, <string>seederData?.projectGroup?.tdei_project_group_id);
+                const serviceRequest = gtfsFlexApi.updateService(payload!, <string>seederData?.projectGroup?.tdei_project_group_id);
                 //Assert
                 await expect(serviceRequest).rejects.toMatchObject({ response: { status: 403 } });
             });
@@ -47,11 +47,11 @@ describe('GTFS Flex service', () => {
 
     describe('Delete Service', () => {
         describe('Functional', () => {
-            it('When deleting service id, Expect to return HTTP Status 403', async () => {
+            it('As a POC, When deleting service id, Expect to return forbidden request', async () => {
                 //Arrange
-                const gtfsFlexApi = new GTFSFlexServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
                 //Act
-                const serviceRequest = gtfsFlexApi.deleteService(seederData?.projectGroup?.tdei_project_group_id!, <string>seederData?.service?.tdei_service_id!, true);
+                const serviceRequest = gtfsFlexApi.deleteService(seederData?.projectGroup?.tdei_project_group_id!, <string>seederData?.getService('flex').tdei_service_id!, true);
                 //Assert
                 await expect(serviceRequest).rejects.toMatchObject({ response: { status: 403 } });
             });
@@ -60,9 +60,9 @@ describe('GTFS Flex service', () => {
 
     describe('Get Services', () => {
         describe('Functional', () => {
-            it('When searched without filters, Expect to return list of Services of type Service', async () => {
+            it('As a POC, When searched without filters, Expect to return list of Services of type Service', async () => {
                 //Arrange
-                const gtfsFlexApi = new GTFSFlexServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
                 //Act
                 const serviceResponse = await gtfsFlexApi.getService();
                 //Assert

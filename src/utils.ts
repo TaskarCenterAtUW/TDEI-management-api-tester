@@ -1,15 +1,15 @@
 
 import { AuthApi, Configuration } from "tdei-management-client";
-import config from "./test-harness.json";
+import { environment } from "./environment/environment";
 /**
  * Utility class.
  */
 export class Utility {
   static getConfiguration(): Configuration {
     return new Configuration({
-      username: config.system.username,
-      password: config.system.password,
-      basePath: config.system.baseUrl
+      username: environment.seed.adminUser,
+      password: environment.seed.adminPassword,
+      basePath: environment.seed.baseUrl
     });
   }
 

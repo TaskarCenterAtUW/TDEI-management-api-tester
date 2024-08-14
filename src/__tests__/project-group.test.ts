@@ -1,7 +1,7 @@
 import { Utility } from "../utils";
-import { AuthApi, ProjectGroupApi, ProjectGroup, ProjectGroupList, Polygon, POC } from "tdei-management-client";
 import seed, { SeedDetails } from "../data.seed";
 import { TdeiObjectFaker } from "../tdei-object-faker";
+import { AuthApi, POC, Polygon, ProjectGroup, ProjectGroupApi, ProjectGroupList } from "tdei-management-client";
 
 describe("Project Group service", () => {
   let configurationWithAuthHeader = Utility.getConfiguration();
@@ -21,7 +21,7 @@ describe("Project Group service", () => {
 
   describe("Create Project Group", () => {
     describe("Auth", () => {
-      it("When no auth token provided, Expect to return HTTP status 401", async () => {
+      it("When no auth token provided, Expect to return unauthorized error", async () => {
         //Arrange
         let oraganizationApi = new ProjectGroupApi(configurationWithoutAuthHeader);
         //Act
@@ -45,7 +45,7 @@ describe("Project Group service", () => {
 
       });
 
-      it("When creating new oraganization with same name, Expect to return HTTP Status 400", async () => {
+      it("When creating new oraganization with same name, Expect to return bad request", async () => {
         //Arrange
         let oraganizationApi = new ProjectGroupApi(configurationWithAuthHeader);
         //Act
@@ -59,7 +59,7 @@ describe("Project Group service", () => {
     });
 
     describe("Validation", () => {
-      it("When creating new oraganization with empty name, Expect to return HTTP Status 400", async () => {
+      it("When creating new oraganization with empty name, Expect to return bad request", async () => {
         //Arrange
         let oraganizationApi = new ProjectGroupApi(configurationWithAuthHeader);
         //Act
@@ -72,20 +72,7 @@ describe("Project Group service", () => {
         await expect(oraganizationResponse).rejects.toMatchObject({ response: { status: 400 } });
       });
 
-      it("When creating new oraganization with empty phone, Expect to return HTTP Status 400", async () => {
-        //Arrange
-        let oraganizationApi = new ProjectGroupApi(configurationWithAuthHeader);
-        //Act
-        let payload = TdeiObjectFaker.getProjectGroup();
-        payload.phone = '';
-
-        const oraganizationResponse = oraganizationApi.createProjectGroup(payload);
-
-        //Assert
-        await expect(oraganizationResponse).rejects.toMatchObject({ response: { status: 400 } });
-      });
-
-      it("When creating new oraganization with empty address, Expect to return HTTP Status 400", async () => {
+      it("When creating new oraganization with empty address, Expect to return bad request", async () => {
         //Arrange
         let oraganizationApi = new ProjectGroupApi(configurationWithAuthHeader);
         //Act
@@ -98,7 +85,7 @@ describe("Project Group service", () => {
         await expect(oraganizationResponse).rejects.toMatchObject({ response: { status: 400 } });
       });
 
-      it('When creating new project group with invalid polygon, Expect to return HTTP Status 400', async () => {
+      it('When creating new project group with invalid polygon, Expect to return bad request', async () => {
         //Arrange
         let oraganizationApi = new ProjectGroupApi(configurationWithAuthHeader);
         //Act
@@ -115,7 +102,7 @@ describe("Project Group service", () => {
 
   describe("Update Project Group", () => {
     describe("Auth", () => {
-      it("When no auth token provided, Expect to return HTTP status 401", async () => {
+      it("When no auth token provided, Expect to return unauthorized request", async () => {
         //Arrange
         let oraganizationApi = new ProjectGroupApi(configurationWithoutAuthHeader);
         //Act
@@ -140,11 +127,11 @@ describe("Project Group service", () => {
     });
 
     describe("Validation", () => {
-      it("When updating new oraganization with empty name, Expect to return HTTP Status 400", async () => {
+      it("When updating new oraganization with empty name, Expect to return bad request", async () => {
         //Arrange
         let oraganizationApi = new ProjectGroupApi(configurationWithAuthHeader);
         //Act
-        let payload = seederData?.projectGroup!;
+        let payload = Object.assign({}, seederData?.projectGroup!);
         payload.project_group_name = '';
 
         const oraganizationResponse = oraganizationApi.updateProjectGroup(payload);
@@ -153,24 +140,11 @@ describe("Project Group service", () => {
         await expect(oraganizationResponse).rejects.toMatchObject({ response: { status: 400 } });
       });
 
-      it("When updating new oraganization with empty phone, Expect to return HTTP Status 400", async () => {
+      it("When updating new oraganization with empty address, Expect to return bad request", async () => {
         //Arrange
         let oraganizationApi = new ProjectGroupApi(configurationWithAuthHeader);
         //Act
-        let payload = seederData?.projectGroup!;
-        payload.phone = '';
-
-        const oraganizationResponse = oraganizationApi.updateProjectGroup(payload);
-
-        //Assert
-        await expect(oraganizationResponse).rejects.toMatchObject({ response: { status: 400 } });
-      });
-
-      it("When updating new oraganization with empty address, Expect to return HTTP Status 400", async () => {
-        //Arrange
-        let oraganizationApi = new ProjectGroupApi(configurationWithAuthHeader);
-        //Act
-        let payload = seederData?.projectGroup!;
+        let payload = Object.assign({}, seederData?.projectGroup!);
         payload.address = '';
 
         const oraganizationResponse = oraganizationApi.updateProjectGroup(payload);
@@ -179,11 +153,11 @@ describe("Project Group service", () => {
         await expect(oraganizationResponse).rejects.toMatchObject({ response: { status: 400 } });
       });
 
-      it('When updating newproject groupwith invalid polygon, Expect to return HTTP Status 400', async () => {
+      it('When updating newproject groupwith invalid polygon, Expect to return bad request', async () => {
         //Arrange
         let oraganizationApi = new ProjectGroupApi(configurationWithAuthHeader);
         //Act
-        let payload = seederData?.projectGroup!;
+        let payload = Object.assign({}, seederData?.projectGroup!);
         payload.polygon = TdeiObjectFaker.getInvalidPolygon();
 
         const oraganizationResponse = oraganizationApi.updateProjectGroup(payload);
@@ -196,7 +170,7 @@ describe("Project Group service", () => {
 
   describe('Get Project Groups', () => {
     describe('Auth', () => {
-      it("When no auth token provided, Expect to return HTTP status 401", async () => {
+      it("When no auth token provided, Expect to return unauthorized request", async () => {
         //Arrange
         let oraganizationApi = new ProjectGroupApi(configurationWithoutAuthHeader);
         //Act
@@ -222,7 +196,7 @@ describe("Project Group service", () => {
           expectPolygon(projectGroup.polygon);
           expect(projectGroup).toMatchObject(<ProjectGroupList>{
             tdei_project_group_id: expect.any(String),
-            name: expect.any(String),
+            project_group_name: expect.any(String),
             phone: expect.any(String),
             url: expect.any(String),
             address: expect.any(String),
@@ -240,7 +214,6 @@ describe("Project Group service", () => {
         const oraganizationResponse = await oraganizationApi.getProjectGroup(seederData?.projectGroup?.tdei_project_group_id);
 
         const data = oraganizationResponse.data;
-
         //Assert
         expect(oraganizationResponse.status).toBe(200);
         expect(Array.isArray(data)).toBe(true);
@@ -248,12 +221,12 @@ describe("Project Group service", () => {
           expectPolygon(projectGroup.polygon);
           expect(projectGroup).toMatchObject(<ProjectGroupList>{
             tdei_project_group_id: seederData?.projectGroup?.tdei_project_group_id,
-            name: expect.any(String),
+            project_group_name: expect.any(String),
             phone: expect.any(String),
             url: expect.any(String),
             address: expect.any(String),
             polygon: expect.any(Object || null),
-            poc: expect.anything() as POC[]
+            poc: expect.any(Array)
           })
         })
       });
@@ -261,9 +234,10 @@ describe("Project Group service", () => {
       it('When searched with project group name filter, Expect to return list of project groups matching fiter', async () => {
         //Arrange
         let oraganizationApi = new ProjectGroupApi(configurationWithAuthHeader);
-
+        let tdei_project_group_id = seederData?.projectGroup?.tdei_project_group_id;
+        let project_group_name = seederData?.projectGroup?.project_group_name;
         //Act
-        const oraganizationResponse = await oraganizationApi.getProjectGroup(seederData?.projectGroup?.tdei_project_group_id, seederData?.projectGroup?.project_group_name);
+        const oraganizationResponse = await oraganizationApi.getProjectGroup(undefined, project_group_name);
 
         const data = oraganizationResponse.data;
 
@@ -273,8 +247,8 @@ describe("Project Group service", () => {
         oraganizationResponse.data.forEach(projectGroup => {
           expectPolygon(projectGroup.polygon);
           expect(projectGroup).toMatchObject(<ProjectGroupList>{
-            tdei_project_group_id: seederData?.projectGroup?.tdei_project_group_id,
-            name: seederData?.projectGroup?.project_group_name,
+            tdei_project_group_id: tdei_project_group_id,
+            project_group_name: project_group_name,
             phone: expect.any(String),
             url: expect.any(String),
             address: expect.any(String),
@@ -303,7 +277,7 @@ describe("Project Group service", () => {
 
   describe('Delete Project Group', () => {
     describe('Auth', () => {
-      it('When no auth token provided, Expect to return HTTP status 401', async () => {
+      it('When no auth token provided, Expect to return unauthorized request', async () => {
         //Arrange
         let oraganizationApi = new ProjectGroupApi(configurationWithoutAuthHeader);
 

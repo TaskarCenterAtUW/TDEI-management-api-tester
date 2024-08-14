@@ -3,7 +3,6 @@ import { ProjectGroupRoles, Register, RoleDetails, Roles, User, UserManagementAp
 import { faker } from '@faker-js/faker';
 import seed, { SeedDetails } from "../data.seed";
 import { TdeiObjectFaker } from "../tdei-object-faker";
-import exp from "constants";
 
 describe("User Management service", () => {
   let configurationWithAuthHeader = Utility.getConfiguration();
@@ -60,7 +59,7 @@ describe("User Management service", () => {
   describe("Register User", () => {
 
     describe("Validation", () => {
-      it("When email not provided, expect to return HTTP status 400", async () => {
+      it("When email not provided, expect to return bad request", async () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
         //Act
@@ -69,7 +68,7 @@ describe("User Management service", () => {
         await expect(request).rejects.toMatchObject({ response: { status: 400 } });
       });
 
-      it("When password not provided, expect to return HTTP status 400", async () => {
+      it("When password not provided, expect to return bad request", async () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
         //Act
@@ -77,7 +76,7 @@ describe("User Management service", () => {
         //Assert
         await expect(request).rejects.toMatchObject({ response: { status: 400 } });
       });
-      it("When no information provided, expect to return HTTP status 400", async () => {
+      it("When no information provided, expect to return bad request", async () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
         //Act
@@ -85,7 +84,7 @@ describe("User Management service", () => {
         //Assert
         await expect(request).rejects.toMatchObject({ response: { status: 400 } });
       });
-      it("When invalid email provided, expect to return HTTP status 400", async () => {
+      it("When invalid email provided, expect to return bad request", async () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
         //Act
@@ -93,7 +92,7 @@ describe("User Management service", () => {
         //Assert
         await expect(request).rejects.toMatchObject({ response: { status: 400 } });
       });
-      it("When invalid password provided, expect to return HTTP status 400", async () => {
+      it("When invalid password provided, expect to return bad request", async () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithoutAuthHeader);
         //Act
@@ -153,7 +152,7 @@ describe("User Management service", () => {
         await expect(assignPermission).rejects.toMatchObject({ response: { status: 404 } });;
       });
 
-      it("When managing own account permission, Expect to return HTTP status 400", async () => {
+      it("When managing own account permission, Expect to return bad request", async () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithAuthHeader);
         //Act
@@ -256,7 +255,7 @@ describe("User Management service", () => {
         await expect(assignPermission).rejects.toMatchObject({ response: { status: 404 } });;
       });
 
-      it("When managing own account permission, Expect to return HTTP status 400", async () => {
+      it("When managing own account permission, Expect to return bad request", async () => {
         //Arrange
         let userManagementApi = new UserManagementApi(configurationWithAuthHeader);
         //Act
