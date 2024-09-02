@@ -12,7 +12,14 @@ export default async (): Promise<Config> => {
             ["jest-html-reporters", {
                 "filename": "test-report.html",
                 "urlForTestFiles": "https://github.com/TaskarCenterAtUW/TDEI-management-api-tester/tree/dev",
-                "enableMergeData": true
+                "enableMergeData": true,
+                "inlineSource": true,
+                "pageTitle": `TDEI User Management API Test Report - ${new Date().toLocaleString()}`,
+                "logoImgPath": "src/tdei_logo.png",
+                "customInfos": [{
+                    "title": "Project",
+                    "value": "TDEI User Management API Tester"
+                }]
             }]
         ],
         transform: {

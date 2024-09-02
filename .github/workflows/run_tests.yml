@@ -66,10 +66,6 @@ jobs:
           sudo apt-get install python3-pip -y
           pip3 install azure-storage-blob
 
-      - name: Scrape HTML and Generate report HTML
-        if: always()
-        run: node scrape.js
-
       - name: Upload API Test Report to Azure Blob Storage
         if: always()
         env:
