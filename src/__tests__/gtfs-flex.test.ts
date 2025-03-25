@@ -1,55 +1,75 @@
 import { Utility } from '../utils';
 import {
-    ServiceApi,
-    AuthApi,
-    Service,
-    Polygon,
+    ServiceApi, Polygon, Service,
 } from 'tdei-management-client';
 import seed, { SeedDetails } from '../data.seed';
 import { TdeiObjectFaker } from '../tdei-object-faker';
 
-describe('GTFS Flex service', () => {
-    let configurationWithAuthHeader = Utility.getConfiguration();
-    let configurationWithoutAuthHeader = Utility.getConfiguration();
+describe('TDEI Service', () => {
+    let adminConfiguration = Utility.getAdminConfiguration();
+    let pocUserConfiguration = Utility.getPocConfiguration();
+    let defaultUser = Utility.getDefaultUserConfiguration();
+    let apikeyUser = Utility.getApiKeyConfiguration();
+    let userWithoutLogin = Utility.getPocConfiguration();
     let seederData: SeedDetails | undefined = undefined;
+
     beforeAll(async () => {
         seederData = await seed.generate();
-        let generalAPI = new AuthApi(configurationWithAuthHeader)
-        const loginResponse = await generalAPI.authenticate({
-            username: configurationWithAuthHeader.username,
-            password: configurationWithAuthHeader.password
-        });
-        configurationWithAuthHeader.baseOptions = {
-            headers: { ...Utility.addAuthZHeader(loginResponse.data.access_token) }
-        };
+        await Utility.setAuthToken(adminConfiguration);
+        await Utility.setAuthToken(pocUserConfiguration);
+        await Utility.setAuthToken(defaultUser);
     }, 50000);
 
     describe('Create Service', () => {
-        describe('Auth', () => {
-            it('When no auth token provided, Expect to return unauthorized request', async () => {
+        describe('Functional', () => {
+            it('No Auth, When no auth token provided, Expect to return unauthorized request', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithoutAuthHeader);
+                const gtfsFlexApi = new ServiceApi(userWithoutLogin);
                 //Act
                 const serviceResponse = gtfsFlexApi.createService(TdeiObjectFaker.getService(<string>seederData?.projectGroup?.tdei_project_group_id, 'flex'));
                 //Assert
-                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 401 } });
+                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 403 } });
             });
-        });
 
-        describe('Functional', () => {
-            it('When creating new service, Expect to return newly created service id', async () => {
+            it('As a Member, When creating new service, Expect to return forbidden request', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(defaultUser);
                 //Act
-                const serviceResponse = await gtfsFlexApi.createService(TdeiObjectFaker.getService(<string>seederData?.projectGroup?.tdei_project_group_id, 'flex'));
+                const serviceRequest = gtfsFlexApi.createService(TdeiObjectFaker.getService(<string>seederData?.projectGroup?.tdei_project_group_id, 'flex'));
                 //Assert
-                expect(serviceResponse.status).toBe(200);
-                expect(serviceResponse.data.data?.length).toBeGreaterThan(0);
+                await expect(serviceRequest).rejects.toMatchObject({ response: { status: 403 } });
             });
 
-            it('When creating new service with same service_name, Expect to return bad request', async () => {
+            it('As a API Key user, When creating new service, Expect to return forbidden request', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(apikeyUser);
+                //Act
+                const serviceRequest = gtfsFlexApi.createService(TdeiObjectFaker.getService(<string>seederData?.projectGroup?.tdei_project_group_id, 'flex'));
+                //Assert
+                await expect(serviceRequest).rejects.toMatchObject({ response: { status: 403 } });
+            });
+
+            it('As a POC, When creating new service, Expect to create service successfully', async () => {
+                //Arrange
+                const gtfsFlexApi = new ServiceApi(pocUserConfiguration);
+                //Act
+                const serviceRequest = gtfsFlexApi.createService(TdeiObjectFaker.getService(<string>seederData?.projectGroup?.tdei_project_group_id, 'flex'));
+                //Assert
+                expect((await serviceRequest).status).toBe(200);
+            });
+
+            it('As an Admin, When creating new service, Expect to create service successfully', async () => {
+                //Arrange
+                const gtfsFlexApi = new ServiceApi(adminConfiguration);
+                //Act
+                const serviceRequest = gtfsFlexApi.createService(TdeiObjectFaker.getService(<string>seederData?.projectGroup?.tdei_project_group_id, 'flex'));
+                //Assert
+                expect((await serviceRequest).status).toBe(200);
+            });
+
+            it('As a POC, When creating new service with same service_name, Expect to return bad request', async () => {
+                //Arrange
+                const gtfsFlexApi = new ServiceApi(pocUserConfiguration);
                 let payload = TdeiObjectFaker.getService(<string>seederData?.projectGroup?.tdei_project_group_id, 'flex');
                 payload.service_name = <string>seederData?.getService('flex').service_name;
                 //Act
@@ -57,12 +77,10 @@ describe('GTFS Flex service', () => {
                 //Assert
                 await expect(serviceResponse).rejects.toMatchObject({ response: { status: 400 } });
             });
-        });
 
-        describe('Validation', () => {
             it('When creating new service with empty service_name, Expect to return bad request', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(pocUserConfiguration);
                 let payload = TdeiObjectFaker.getService(<string>seederData?.projectGroup?.tdei_project_group_id, 'flex');
                 payload.service_name = '';
                 //Act
@@ -73,7 +91,7 @@ describe('GTFS Flex service', () => {
 
             it('When creating new service with empty tdei_project_group_id, Expect to return bad request', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(pocUserConfiguration);
                 let payload = TdeiObjectFaker.getService(<string>seederData?.projectGroup?.tdei_project_group_id, 'flex');
                 payload.tdei_project_group_id = '';
                 //Act
@@ -84,7 +102,7 @@ describe('GTFS Flex service', () => {
 
             it('When creating new service with invalid polygon, Expect to return bad request', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(pocUserConfiguration);
                 let payload = TdeiObjectFaker.getService(<string>seederData?.projectGroup?.tdei_project_group_id, 'flex');
                 payload.polygon = TdeiObjectFaker.getInvalidPolygon();
                 //Act
@@ -96,34 +114,61 @@ describe('GTFS Flex service', () => {
     });
 
     describe('Update Service', () => {
-        describe('Auth', () => {
+
+        describe('Functional', () => {
             it('When no auth token provided, Expect to return unauthorized request', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithoutAuthHeader);
+                const gtfsFlexApi = new ServiceApi(userWithoutLogin);
                 let payload = seederData?.updateServiceObject('flex');
                 //Act
                 const serviceResponse = gtfsFlexApi.updateService(payload!, <string>seederData?.projectGroup?.tdei_project_group_id);
                 //Assert
-                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 401 } });
+                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 403 } });
             });
-        });
 
-        describe('Functional', () => {
-            it('When updating new service, Expect to return newly Updated service id', async () => {
+            it('As a Member, When updating any service, Expect to return forbidden request', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(defaultUser);
                 let payload = seederData?.updateServiceObject('flex');
                 //Act
-                const serviceResponse = await gtfsFlexApi.updateService(payload!, <string>seederData?.projectGroup?.tdei_project_group_id);
+                const serviceRequest = gtfsFlexApi.updateService(payload!, <string>seederData?.projectGroup?.tdei_project_group_id);
                 //Assert
-                expect(serviceResponse.status).toBe(200);
+                await expect(serviceRequest).rejects.toMatchObject({ response: { status: 403 } });
             });
-        });
 
-        describe('Validation', () => {
+            it('As a API key user, When updating any service, Expect to return forbidden request', async () => {
+                //Arrange
+                const gtfsFlexApi = new ServiceApi(apikeyUser);
+                let payload = seederData?.updateServiceObject('flex');
+                //Act
+                const serviceRequest = gtfsFlexApi.updateService(payload!, <string>seederData?.projectGroup?.tdei_project_group_id);
+                //Assert
+                await expect(serviceRequest).rejects.toMatchObject({ response: { status: 403 } });
+            });
+
+            it('As a POC, When updating any service, Expect to update service successfully', async () => {
+                //Arrange
+                const gtfsFlexApi = new ServiceApi(pocUserConfiguration);
+                let payload = seederData?.updateServiceObject('flex');
+                //Act
+                const serviceRequest = gtfsFlexApi.updateService(payload!, <string>seederData?.projectGroup?.tdei_project_group_id);
+                //Assert
+                expect((await serviceRequest).status).toBe(200);
+            });
+
+            it('As an Admin, When updating any service, Expect to update service successfully', async () => {
+                //Arrange
+                const gtfsFlexApi = new ServiceApi(adminConfiguration);
+                let payload = seederData?.updateServiceObject('flex');
+                //Act
+                const serviceRequest = gtfsFlexApi.updateService(payload!, <string>seederData?.projectGroup?.tdei_project_group_id);
+                //Assert
+                expect((await serviceRequest).status).toBe(200);
+            });
+
             it('When updating new service with empty service_name, Expect to return bad request', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(pocUserConfiguration);
                 let payload = seederData?.updateServiceObject('flex');
                 payload!.service_name = '';
                 //Act
@@ -134,7 +179,7 @@ describe('GTFS Flex service', () => {
 
             it('When updating new service with empty tdei_project_group_id, Expect to return bad request', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(pocUserConfiguration);
                 let payload = seederData?.updateServiceObject('flex');
                 //Act
                 const serviceResponse = gtfsFlexApi.updateService(payload!, <string>'');
@@ -144,7 +189,7 @@ describe('GTFS Flex service', () => {
 
             it('When updating new service with empty tdei_service_id, Expect to return bad request', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(pocUserConfiguration);
                 let payload = seederData?.updateServiceObject('flex');
                 payload!.tdei_service_id = '';
                 //Act
@@ -155,7 +200,7 @@ describe('GTFS Flex service', () => {
 
             it('When updating new service with invalid polygon, Expect to return bad request', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(pocUserConfiguration);
                 let payload = seederData?.updateServiceObject('flex');
                 payload!.polygon = TdeiObjectFaker.getInvalidPolygon();
                 //Act
@@ -167,22 +212,107 @@ describe('GTFS Flex service', () => {
         });
     });
 
-    describe('Get Services', () => {
-        describe('Auth', () => {
-            it('When no auth token provided, Expect to return unauthorized request', async () => {
+    describe('Delete Service', () => {
+        describe('Functional', () => {
+            it('As a Member, When deleting service id, Expect to return forbidden request', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithoutAuthHeader);
+                const gtfsFlexApi = new ServiceApi(defaultUser);
                 //Act
-                const serviceResponse = gtfsFlexApi.getService();
+                const serviceRequest = gtfsFlexApi.deleteService(seederData?.projectGroup?.tdei_project_group_id!, <string>seederData?.getService('osw').tdei_service_id!, true);
                 //Assert
-                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 401 } });
+                await expect(serviceRequest).rejects.toMatchObject({ response: { status: 403 } });
+            });
+
+            it('As a API Key user, When deleting service id, Expect to return forbidden request', async () => {
+                //Arrange
+                const gtfsFlexApi = new ServiceApi(apikeyUser);
+                //Act
+                const serviceRequest = gtfsFlexApi.deleteService(seederData?.projectGroup?.tdei_project_group_id!, <string>seederData?.getService('flex').tdei_service_id!, true);
+                //Assert
+                await expect(serviceRequest).rejects.toMatchObject({ response: { status: 403 } });
+            });
+
+            it('As a POC, When deleting service id, Expect to delete service successfully', async () => {
+                //Arrange
+                const gtfsFlexApi = new ServiceApi(pocUserConfiguration);
+                //Act
+                const serviceRequest = gtfsFlexApi.deleteService(seederData?.projectGroup?.tdei_project_group_id!, <string>seederData?.getService('flex').tdei_service_id!, true);
+                //Assert
+                expect((await serviceRequest).status).toBe(200);
+            });
+            it('As an Admin, When deleting service id, Expect to delete service successfully', async () => {
+                //Arrange
+                const gtfsFlexApi = new ServiceApi(adminConfiguration);
+                //Act
+                const serviceRequest = gtfsFlexApi.deleteService(seederData?.projectGroup?.tdei_project_group_id!, <string>seederData?.getService('flex').tdei_service_id!, true);
+                //Assert
+                expect((await serviceRequest).status).toBe(200);
             });
         })
+    });
 
+    describe('Get Services', () => {
         describe('Functional', () => {
-            it('When searched without filters, Expect to return list of Services of type Service', async () => {
+            it('As a POC, When searched without filters, Expect to return list of Services of type Service', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(adminConfiguration);
+                //Act
+                const serviceResponse = await gtfsFlexApi.getService();
+                //Assert
+                expect(serviceResponse.status).toBe(200);
+                expect(serviceResponse.data).toBeInstanceOf(Array);
+                serviceResponse.data.forEach(service => {
+                    expectPolygon(service.polygon);
+                    expect(service).toMatchObject(<Service>{
+                        tdei_project_group_id: expect.any(String),
+                        tdei_service_id: expect.any(String),
+                        service_name: expect.any(String),
+                        polygon: expect.any(Object || null)
+                    })
+                })
+            });
+
+            it('As an Admin, When searched without filters, Expect to return list of Services of type Service', async () => {
+                //Arrange
+                const gtfsFlexApi = new ServiceApi(adminConfiguration);
+                //Act
+                const serviceResponse = await gtfsFlexApi.getService();
+                //Assert
+                expect(serviceResponse.status).toBe(200);
+                expect(serviceResponse.data).toBeInstanceOf(Array);
+                serviceResponse.data.forEach(service => {
+                    expectPolygon(service.polygon);
+                    expect(service).toMatchObject(<Service>{
+                        tdei_project_group_id: expect.any(String),
+                        tdei_service_id: expect.any(String),
+                        service_name: expect.any(String),
+                        polygon: expect.any(Object || null)
+                    })
+                })
+            });
+
+            it('As a API key user, When searched without filters, Expect to return list of Services of type Service', async () => {
+                //Arrange
+                const gtfsFlexApi = new ServiceApi(adminConfiguration);
+                //Act
+                const serviceResponse = await gtfsFlexApi.getService();
+                //Assert
+                expect(serviceResponse.status).toBe(200);
+                expect(serviceResponse.data).toBeInstanceOf(Array);
+                serviceResponse.data.forEach(service => {
+                    expectPolygon(service.polygon);
+                    expect(service).toMatchObject(<Service>{
+                        tdei_project_group_id: expect.any(String),
+                        tdei_service_id: expect.any(String),
+                        service_name: expect.any(String),
+                        polygon: expect.any(Object || null)
+                    })
+                })
+            });
+
+            it('As a Default user, When searched without filters, Expect to return list of Services of type Service', async () => {
+                //Arrange
+                const gtfsFlexApi = new ServiceApi(adminConfiguration);
                 //Act
                 const serviceResponse = await gtfsFlexApi.getService();
                 //Assert
@@ -201,9 +331,9 @@ describe('GTFS Flex service', () => {
 
             it('When searched with tdei_project_group_id filter, Expect to return list of Services matching filter', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(adminConfiguration);
                 //Act
-                const serviceResponse = await gtfsFlexApi.getService(undefined, undefined, seederData?.projectGroup?.tdei_project_group_id);
+                const serviceResponse = await gtfsFlexApi.getService(undefined, undefined, undefined, seederData?.projectGroup?.tdei_project_group_id);
                 const data = serviceResponse.data;
                 //Assert
                 expect(serviceResponse.status).toBe(200);
@@ -222,7 +352,7 @@ describe('GTFS Flex service', () => {
 
             it('When searched with service name filter, Expect to return list of Services matching filter', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(adminConfiguration);
                 //Act
                 const serviceResponse = await gtfsFlexApi.getService(undefined, <string>seederData?.getService('flex').service_name);
                 const data = serviceResponse.data;
@@ -242,7 +372,7 @@ describe('GTFS Flex service', () => {
 
             it('When searched with tdei_service_id filter, Expect to return list of Services matching filter', async () => {
                 //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
+                const gtfsFlexApi = new ServiceApi(adminConfiguration);
                 const tdei_service_id = <string>seederData?.getService('flex').tdei_service_id;
                 //Act
                 const serviceResponse = await gtfsFlexApi.getService(tdei_service_id)
@@ -259,39 +389,6 @@ describe('GTFS Flex service', () => {
                         polygon: expect.any(Object || null)
                     })
                 })
-            });
-
-            it('When searched with bbox name filter, Expect to return list of Services matching filter', async () => {
-                //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
-                //Act
-                const serviceResponse = await gtfsFlexApi.getService(undefined, undefined, 'flex', undefined, [121, 154, 134, 198]);
-                const data = serviceResponse.data;
-                //Assert
-                expect(serviceResponse.status).toBe(200);
-                expect(data).toBeInstanceOf(Array);
-            });
-        })
-    });
-
-    describe('Delete Service', () => {
-        describe('Auth', () => {
-            it('When no auth token provided, Expect to return unauthorized request', async () => {
-                //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithoutAuthHeader);
-                //Act
-                const serviceResponse = gtfsFlexApi.deleteService(seederData?.projectGroup?.tdei_project_group_id!, <string>seederData?.getService('flex').tdei_service_id!, true);
-                //Assert
-                await expect(serviceResponse).rejects.toMatchObject({ response: { status: 401 } });
-            });
-
-            it('When deleting service id, Expect to return success', async () => {
-                //Arrange
-                const gtfsFlexApi = new ServiceApi(configurationWithAuthHeader);
-                //Act
-                const serviceResponse = await gtfsFlexApi.deleteService(seederData?.projectGroup?.tdei_project_group_id!, <string>seederData?.getService('flex').tdei_service_id!, true);
-                //Assert
-                expect(serviceResponse.status).toBe(200);
             });
         })
     })

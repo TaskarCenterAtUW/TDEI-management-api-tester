@@ -17,7 +17,7 @@ export class TdeiObjectFaker {
             password: "Tester01*",
             firstName: faker.name.firstName(),
             lastName: faker.name.lastName(),
-            phone: faker.phone.number()
+            phone: faker.phone.number("##########")
         };
     }
 

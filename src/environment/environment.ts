@@ -12,5 +12,6 @@ export const environment = {
         baseUrl: process.env.SYSTEM_BASE_URL,
         username: process.env.SYSTEM_USERNAME,
         password: process.env.SYSTEM_PASSWORD
-    }
+    },
+    environment: process.env.ENVIRONMENT ?? "dev",
 }
