@@ -11,6 +11,7 @@ on:
     types: [run_api_tests]
   schedule:
     - cron: "0 0 * * 0"
+  workflow_dispatch:
 
 ###############
 # Set the Job #
@@ -97,6 +98,26 @@ jobs:
               blob_client.upload_blob(data, overwrite=True)
           " > upload_to_blob.py
           python3 upload_to_blob.py
+
+      - name: Upload log to Azure
+        uses: LanceMcCarthy/Action-AzureBlobUpload@v2
+        with:
+          source_folder: "user-management-api-test-report-${{ env.TIMESTAMP }}"
+          destination_folder: "${{ env.TIMESTAMP }}"
+          connection_string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          container_name: "management-api-tester"
+          clean_destination_folder: false
+          delete_if_exists: false
+
+      - name: Upload report to Azure
+        uses: LanceMcCarthy/Action-AzureBlobUpload@v2
+        with:
+          source_folder: "test-report.html"
+          destination_folder: "${{ env.TIMESTAMP }}"
+          connection_string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          container_name: "management-api-tester"
+          clean_destination_folder: false
+          delete_if_exists: false
 
       - name: send email notification
         if: always()
