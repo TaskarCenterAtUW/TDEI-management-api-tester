@@ -1,0 +1,14 @@
+{
+    "dev": {
+        "users": {
+            "poc": "adella.legros3@gmail.com",
+            "default_user": "defaultuser@mailinator.com"
+        }
+    },
+    "stage": {
+        "users": {
+            "poc": "frederic71@gmail.com",
+            "default_user": "defaultuser@mailinator.com"
+        }
+    }
+}
