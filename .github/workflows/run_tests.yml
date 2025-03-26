@@ -67,37 +67,37 @@ jobs:
           sudo apt-get install python3-pip -y
           pip3 install azure-storage-blob
 
-      - name: Upload API Test Report to Azure Blob Storage
-        if: always()
-        env:
-          AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
-          AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
-          AZURE_STORAGE_CONTAINER_NAME: ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}
-        run: |
-          echo "
-          from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
-          import os
+      # - name: Upload API Test Report to Azure Blob Storage
+      #   if: always()
+      #   env:
+      #     AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
+      #     AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
+      #     AZURE_STORAGE_CONTAINER_NAME: ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}
+      #   run: |
+      #     echo "
+      #     from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+      #     import os
 
-          connect_str = os.getenv('AZURE_STORAGE_ACCOUNT_KEY')
-          account_name = os.getenv('AZURE_STORAGE_ACCOUNT_NAME')
-          blob_service_client = BlobServiceClient(account_url=f'https://{account_name}.blob.core.windows.net', credential=connect_str)
-          container_client = blob_service_client.get_container_client(os.getenv('AZURE_STORAGE_CONTAINER_NAME'))
+      #     connect_str = os.getenv('AZURE_STORAGE_ACCOUNT_KEY')
+      #     account_name = os.getenv('AZURE_STORAGE_ACCOUNT_NAME')
+      #     blob_service_client = BlobServiceClient(account_url=f'https://{account_name}.blob.core.windows.net', credential=connect_str)
+      #     container_client = blob_service_client.get_container_client(os.getenv('AZURE_STORAGE_CONTAINER_NAME'))
 
-          log_dir = './user-management-api-test-report-' + os.getenv('TIMESTAMP')
-          if os.path.exists(log_dir):
-            for file_name in os.listdir(log_dir):
-              local_file_name = os.path.join(log_dir, file_name)
-              blob_client = container_client.get_blob_client(file_name)
-              with open(local_file_name, 'rb') as data:
-                  blob_client.upload_blob(data, overwrite=True)
-          file_path = '/home/runner/work/TDEI-management-api-tester/TDEI-management-api-tester/test-report.html'
-          timestamp = os.getenv('TIMESTAMP')
-          blob_name = f'management-test-report-{timestamp}.html'
-          blob_client = container_client.get_blob_client(blob_name)
-          with open(file_path, 'rb') as data:
-              blob_client.upload_blob(data, overwrite=True)
-          " > upload_to_blob.py
-          python3 upload_to_blob.py
+      #     log_dir = './user-management-api-test-report-' + os.getenv('TIMESTAMP')
+      #     if os.path.exists(log_dir):
+      #       for file_name in os.listdir(log_dir):
+      #         local_file_name = os.path.join(log_dir, file_name)
+      #         blob_client = container_client.get_blob_client(file_name)
+      #         with open(local_file_name, 'rb') as data:
+      #             blob_client.upload_blob(data, overwrite=True)
+      #     file_path = '/home/runner/work/TDEI-management-api-tester/TDEI-management-api-tester/test-report.html'
+      #     timestamp = os.getenv('TIMESTAMP')
+      #     blob_name = f'management-test-report-{timestamp}.html'
+      #     blob_client = container_client.get_blob_client(blob_name)
+      #     with open(file_path, 'rb') as data:
+      #         blob_client.upload_blob(data, overwrite=True)
+      #     " > upload_to_blob.py
+      #     python3 upload_to_blob.py
 
       - name: Upload log to Azure
         uses: LanceMcCarthy/Action-AzureBlobUpload@v2
